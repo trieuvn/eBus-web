@@ -1,32 +1,41 @@
-using System.Diagnostics;
-using eBusWeb.Models;
 using Microsoft.AspNetCore.Mvc;
+using Supabase;
+using eBusWeb.Models;
 
-namespace eBusWeb.Controllers
+public class HomeController : Controller
 {
-    public class HomeController : Controller
+    private readonly Client _supabase;
+
+    public HomeController(Client supabase)
     {
-        private readonly ILogger<HomeController> _logger;
+        _supabase = supabase;
+    }
 
-        public HomeController(ILogger<HomeController> logger)
+    public async Task<IActionResult> Index()
+    {
+        var result = await _supabase
+            .From<User>()
+            .Get();
+
+        return View(result.Models);
+    }
+    public async Task<IActionResult> Privacy()
+    {
+        try
         {
-            _logger = logger;
+            var result = await _supabase
+                .From<User>()
+                .Get();
+
+            Console.WriteLine($"Supabase OK - Records: {result.Models.Count}");
+
+            return Content($"Supabase OK - Records: {result.Models.Count}");
         }
-
-        public IActionResult Index()
+        catch (Exception ex)
         {
-            return View();
-        }
-
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            Console.WriteLine(ex.Message);
+            return Content("Supabase FAIL: " + ex.Message);
         }
     }
+
 }

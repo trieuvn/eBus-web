@@ -145,3 +145,145 @@ body {
         background: linear-gradient(180deg, #3b82f6, #1d4ed8);
         border-radius: 8px 8px 0 0;
     }
+/*=======User=========*/
+
+.user-management-page .breadcrumb {
+    font-size: 14px;
+    color: #4c739a;
+    display: flex;
+    gap: 8px;
+}
+
+.user-management-page .page-header h1 {
+    font-size: 32px;
+    font-weight: 900;
+    color: #0d141b;
+}
+
+.user-management-page .page-header p {
+    color: #4c739a;
+}
+
+/* Toolbar */
+.user-management-page .toolbar {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    background: #fff;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+    /* Inputs */
+    .user-management-page .toolbar input,
+    .user-management-page .toolbar select {
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid #cfdbe7;
+        min-width: 220px;
+    }
+
+/* Button */
+.user-management-page .btn-primary {
+    background: #137fec;
+    color: white;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-weight: 600;
+    border: none;
+}
+
+/* Table */
+.user-management-page .table-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+}
+
+.user-management-page table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.user-management-page th,
+.user-management-page td {
+    padding: 16px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.user-management-page tr:hover {
+    background: #f8fafc;
+}
+
+/* Badge */
+.user-management-page .badge.admin {
+    background: #ede9fe;
+    color: #6d28d9;
+}
+
+/* Status */
+.user-management-page .status.active {
+    background: #dcfce7;
+    color: #166534;
+    padding: 4px 10px;
+    border-radius: 999px;
+}
+
+/* Actions */
+/* Action icons */
+.user-management-page td button {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    transition: all .2s ease;
+}
+
+    .user-management-page td button i {
+        font-size: 16px;
+    }
+
+    /* View */
+    .user-management-page td button .bi-eye {
+        color: #2563eb;
+    }
+
+    .user-management-page td button:hover .bi-eye {
+        color: #1d4ed8;
+    }
+
+    /* Edit */
+    .user-management-page td button .bi-pencil {
+        color: #f59e0b;
+    }
+
+    .user-management-page td button:hover .bi-pencil {
+        color: #d97706;
+    }
+
+    /* Delete */
+    .user-management-page td button.danger .bi-trash {
+        color: #dc2626;
+    }
+
+    .user-management-page td button:hover {
+        background: #f1f5f9;
+    }
+
+.user-management-page .status.inactive {
+    background: #fef2f2;
+    color: #991b1b;
+    padding: 4px 10px;
+    border-radius: 999px;
+}
+
+.agent {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.customer {
+    background: #ecfeff;
+    color: #155e75;
+}

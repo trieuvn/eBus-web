@@ -1,0 +1,142 @@
+﻿@{
+    ViewData["Title"] = "Create User";
+    ViewData["Header"] = "Create User";
+}
+
+<div class="user-create-page">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb mb-3">
+        <a href="/Admin" class="breadcrumb-link">Dashboard</a>
+        <span>/</span>
+        <a href="/Admin/User" class="breadcrumb-link">User Management</a>
+        <span>/</span>
+        <strong>Create User</strong>
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header mb-4">
+        <h1>Create New User</h1>
+        <p>Add a new administrator or customer account.</p>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card border-0 shadow-sm">
+        <form method="post">
+            <div class="card-body">
+                <div class="row g-4">
+                    <!-- Full Name -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Full Name</label>
+                        <input type="text" class="form-control" placeholder="John Doe" name="FullName" />
+                    </div>
+                    <!-- Email -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Email Address</label>
+                        <input type="email" class="form-control" placeholder="john@example.com" name="Email" />
+                    </div>
+                    <!-- Phone -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Phone Number</label>
+                        <input type="text" class="form-control" placeholder="+84 912 345 678" name="Phone" />
+                    </div>
+                    <!-- Role -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Role</label>
+                        <select class="form-select" name="Role">
+                            <option selected disabled>Select role</option>
+                            <option value="Admin">Admin</option>
+                            <option value="Agent">Agent</option>
+                            <option value="Customer">Customer</option>
+                        </select>
+                    </div>
+                    <!-- Password -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Password</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" placeholder="••••••••" name="Password" />
+                            <span class="input-group-text bg-white">
+                                <i class="fa-solid fa-eye-slash toggle-password" style="cursor:pointer;"></i>
+                            </span>
+                        </div>
+                        <small class="text-muted">At least 8 characters, 1 uppercase letter, 1 number</small>
+                    </div>
+                    <!-- Status -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Status</label>
+                        <select class="form-select" name="Status">
+                            <option value="Active" selected>Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card-footer bg-light d-flex justify-content-end gap-2">
+                <a href="/Admin/User" class="btn btn-light">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-plus me-1"></i> Create User
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .user-create-page {
+            max-width: 1100px; /* giới hạn chiều ngang */
+            width: 100%;
+            margin: 0 auto; /* căn giữa nội dung */
+            padding: 1.5rem; /* padding bên trong */
+        }
+
+            .user-create-page .breadcrumb {
+                font-size: 14px;
+                color: #64748b;
+                display: flex;
+                gap: 6px;
+            }
+
+            .user-create-page .page-header h1 {
+                font-size: 28px;
+                font-weight: 800;
+            }
+
+            .user-create-page .page-header p {
+                color: #64748b;
+            }
+
+            .user-create-page .card {
+                border-radius: 14px;
+            }
+
+        /* Breadcrumb links */
+        .breadcrumb-link {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+            .breadcrumb-link:hover {
+                text-decoration: underline;
+            }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.toggle-password').forEach(icon => {
+            icon.addEventListener('click', function() {
+                const input = this.closest('.input-group').querySelector('input');
+                if (input.type === "password") {
+                    input.type = "text";
+                    this.classList.replace('fa-eye-slash', 'fa-eye');
+                } else {
+                    input.type = "password";
+                    this.classList.replace('fa-eye', 'fa-eye-slash');
+                }
+            });
+        });
+    </script>
+}

@@ -1,22 +1,22 @@
-html {
-  font-size: 14px;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
-}
-
 body {
-  margin-bottom: 60px;
+    font-family: 'Inter', sans-serif;
+    background-color: #f6f7f8;
 }
+
+.login-wrapper {
+    min-height: calc(100vh - 120px);
+}
+
+.login-card {
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+}
+
+.login-hero {
+    background: linear-gradient(to top, rgba(0,0,0,.6), rgba(0,0,0,.1)), url("https://lh3.googleusercontent.com/aida-public/AB6AXuBv1fdhzR_6ME66awdjnHaTZ39dwv6zlfB-l_R5Sp3RWWNaSEY1UkpT0XEutd6aEKpcaNfo4SbapzJ6w9BvXSBEsDxnzRfeTF6HBK0EDihaU90ss0GX6eaXYJjv1BDGUGYtZNcOz2KyOGPbk3tQo_9bs6pE-HzDIwmwN1jnpbliiZAj-o3VlUMSHc7dBgJrJ5QYQ5PI8WUjcKIatVkBOlGqNeiP2xZJigNaCNQ10ggATlqh19t-OnoKfIjZkLgbhpwyskNJNvAeaGV1") center/cover no-repeat;
+}
+
+    .login-hero h2 {
+        font-weight: 800;
+    }

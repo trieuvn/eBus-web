@@ -1,21 +1,69 @@
-﻿@model List<eBusWeb.Models.User>
+﻿@{
+    ViewData["Title"] = "Login";
+    Layout = "_Layout";
+}
 
-<h2>Danh sách Users</h2>
+<div class="login-wrapper d-flex align-items-center justify-content-center px-3">
+    <div class="login-card bg-white w-100" style="max-width:1100px;margin-top: 12px;">
+        <div class="row g-0 min-vh-75">
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Email</th>
-            <th>Họ tên</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var u in Model)
-        {
-            <tr>
-                <td>@u.Email</td>
-                <td>@u.FullName</td>
-            </tr>
-        }
-    </tbody>
-</table>
+            <!-- Left Image -->
+            <div class="col-lg-6 d-none d-lg-flex login-hero text-white align-items-end">
+                <div class="p-5">
+                    <h2>Travel with comfort and safety</h2>
+                    <p class="text-light">
+                        Join thousands of travelers exploring the world with BusBooker.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Login Form -->
+            <div class="col-lg-6 p-5">
+                <h1 class="fw-black mb-2">Welcome Back</h1>
+                <p class="text-muted mb-4">
+                    Log in to manage your bookings and view your travel history.
+                </p>
+
+                <form method="post">
+                    <!-- Email -->
+                    <div class="mb-3">
+                        <label class="form-label">Email Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fa-regular fa-envelope"></i>
+                            </span>
+                            <input type="email" class="form-control" placeholder="user@example.com">
+                        </div>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fa-solid fa-lock"></i>
+                            </span>
+                            <input type="password" class="form-control" placeholder="••••••••">
+                        </div>
+                    </div>
+
+                    <!-- Remember -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox">
+                            <label class="form-check-label">Remember me</label>
+                        </div>
+                        <a href="#" class="text-primary fw-medium">Forgot password?</a>
+                    </div>
+
+                    <!-- Login -->
+                    <button class="btn btn-primary w-100 fw-bold py-2 mb-4">
+                        Login
+                    </button>
+
+                   
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

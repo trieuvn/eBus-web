@@ -2,11 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using Supabase;
 using eBusWeb.Models;
 
-public class HomeController : Controller
+public class LoginController : Controller
 {
     private readonly Client _supabase;
 
-    public HomeController(Client supabase)
+    public LoginController(Client supabase)
     {
         _supabase = supabase;
     }

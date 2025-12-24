@@ -21,7 +21,6 @@
     <Folder Include="Areas\Admin\Models\" />
     <Folder Include="Areas\Admin\Views\Booking\" />
     <Folder Include="Areas\Admin\Views\Trip\" />
-    <Folder Include="Areas\Admin\Views\User\" />
   </ItemGroup>
 
 </Project>

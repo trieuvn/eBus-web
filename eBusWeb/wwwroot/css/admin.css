@@ -27,9 +27,15 @@ body {
 /* ===== Sidebar ===== */
 .admin-sidebar {
     width: 260px;
+    min-height: 100vh; 
+    display: flex; 
+    flex-direction: column;
     background: linear-gradient(180deg, #ffffff, #f8fafc);
     border-right: 1px solid #e5e7eb;
+    position: relative;
+    z-index: 5;
 }
+
 
     .admin-sidebar .nav-link {
         color: #334155;

@@ -1,5 +1,214 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "Dashboard";
 }
+
+<div class="container-fluid py-4" style="
+     padding-left: 40px;>
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-speedometer2 text-primary me-2"></i>
+                Admin Dashboard
+            </h2>
+            <p class="text-muted mb-0">Overview of system performance & daily operations</p>
+        </div>
+        <button class="btn btn-outline-primary btn-sm shadow-sm">
+            <i class="bi bi-download me-1"></i> Export Report
+        </button>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card kpi-card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted small fw-semibold">TOTAL REVENUE</span>
+                        <div class="icon-circle bg-primary-soft">
+                            <i class="bi bi-currency-dollar text-primary"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold mt-2">$45,230</h3>
+                    <span class="text-success small fw-semibold">
+                        <i class="bi bi-arrow-up-right"></i> 12% this month
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card kpi-card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted small fw-semibold">TOTAL BOOKINGS</span>
+                        <div class="icon-circle bg-primary-soft">
+                            <i class="bi bi-ticket-perforated text-primary"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold mt-2">1,245</h3>
+                    <span class="text-success small fw-semibold">
+                        <i class="bi bi-arrow-up-right"></i> 5% this week
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card kpi-card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted small fw-semibold">ACTIVE ROUTES</span>
+                        <div class="icon-circle bg-primary-soft">
+                            <i class="bi bi-map text-primary"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold mt-2">42</h3>
+                    <span class="text-muted small">No changes</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card kpi-card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted small fw-semibold">PENDING PAYMENTS</span>
+                        <div class="icon-circle bg-warning-soft">
+                            <i class="bi bi-exclamation-circle text-warning"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold mt-2">$340</h3>
+                    <span class="text-warning small fw-semibold">
+                        Action required
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <button class="btn btn-primary w-100 py-4 shadow-sm quick-action">
+                <i class="bi bi-plus-circle fs-3 mb-2"></i>
+                <strong>Add Route</strong>
+                <small class="opacity-75">Create new route</small>
+            </button>
+        </div>
+
+        <div class="col-md-3">
+            <button class="btn btn-white w-100 py-4 shadow-sm border quick-action">
+                <i class="bi bi-clock-history text-primary fs-3 mb-2"></i>
+                <strong>Schedule Trip</strong>
+                <small class="text-muted">Manage schedules</small>
+            </button>
+        </div>
+
+        <div class="col-md-3">
+            <button class="btn btn-white w-100 py-4 shadow-sm border quick-action">
+                <i class="bi bi-shield-check text-primary fs-3 mb-2"></i>
+                <strong>Verify User</strong>
+                <small class="text-muted">User validation</small>
+            </button>
+        </div>
+
+        <div class="col-md-3">
+            <button class="btn btn-white w-100 py-4 shadow-sm border quick-action">
+                <i class="bi bi-search text-primary fs-3 mb-2"></i>
+                <strong>Manage Bookings</strong>
+                <small class="text-muted">Search & update</small>
+            </button>
+        </div>
+    </div>
+
+    <!-- Charts & Table -->
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-1">Route Popularity</h6>
+                    <p class="text-muted small mb-4">Last 7 days</p>
+
+                    <div class="d-flex align-items-end justify-content-between chart-simple">
+                        <span style="height:40%"></span>
+                        <span style="height:20%"></span>
+                        <span style="height:80%"></span>
+                        <span style="height:65%"></span>
+                        <span style="height:55%"></span>
+                    </div>
+
+                    <div class="d-flex justify-content-between small text-muted mt-2">
+                        <span>NY-DC</span>
+                        <span>LA-SF</span>
+                        <span>CHI</span>
+                        <span>MIA</span>
+                        <span>HOU</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold mb-0">Recent Bookings</h6>
+                    <a href="#" class="small text-decoration-none">View all</a>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table align-middle table-hover mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-3 small text-muted">BOOKING</th>
+                                <th class="small text-muted">PASSENGER</th>
+                                <th class="small text-muted">ROUTE</th>
+                                <th class="small text-muted">STATUS</th>
+                                <th class="text-end pe-3 small text-muted">AMOUNT</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="ps-3 fw-semibold">#BK-7829</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar me-2">SM</div> Sarah M.
+                                    </div>
+                                </td>
+                                <td>NY → DC</td>
+                                <td><span class="badge bg-success-subtle text-success">Confirmed</span></td>
+                                <td class="text-end pe-3 fw-semibold">$45</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-3 fw-semibold">#BK-7828</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar me-2">JD</div> John D.
+                                    </div>
+                                </td>
+                                <td>LA → SF</td>
+                                <td><span class="badge bg-warning-subtle text-warning">Pending</span></td>
+                                <td class="text-end pe-3 fw-semibold">$65.5</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-3 fw-semibold">#BK-7827</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar me-2">MB</div> Michael B.
+                                    </div>
+                                </td>
+                                <td>MIA → ORL</td>
+                                <td><span class="badge bg-danger-subtle text-danger">Cancelled</span></td>
+                                <td class="text-end pe-3 fw-semibold">$32</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>

@@ -1,7 +1,5 @@
 ﻿using Supabase.Postgrest.Attributes;
 using Supabase.Postgrest.Models;
-using Supabase.Postgrest.Attributes;
-using Supabase.Postgrest.Models;
 
 namespace eBusWeb.Models
 {
@@ -26,7 +24,10 @@ namespace eBusWeb.Models
         [Column("role")]
         public int Role { get; set; }
 
-        [Column("authId")]
+        [Column("authid")]
         public Guid? AuthId { get; set; }
+
+        [Column("created_at")]
+        public DateTime CreatedAt { get; set; }
     }
 }

@@ -1,9 +1,9 @@
 ﻿@{
-    ViewData["Title"] = "Login";
     Layout = "_Layout";
 }
 
 <div class="login-wrapper d-flex align-items-center justify-content-center px-3">
+
     <div class="login-card bg-white w-100" style="max-width:1100px;margin-top: 12px;">
         <div class="row g-0 min-vh-75">
 
@@ -23,8 +23,8 @@
                 <p class="text-muted mb-4">
                     Log in to manage your bookings and view your travel history.
                 </p>
-
-                <form method="post">
+                <div id="loginAlert" class="alert d-none" role="alert"></div>
+                <form id="loginForm">
                     <!-- Email -->
                     <div class="mb-3">
                         <label class="form-label">Email Address</label>
@@ -32,7 +32,8 @@
                             <span class="input-group-text">
                                 <i class="fa-regular fa-envelope"></i>
                             </span>
-                            <input type="email" class="form-control" placeholder="user@example.com">
+                            <input type="email" name="email" class="form-control"
+                                   placeholder="user@example.com" required>
                         </div>
                     </div>
 
@@ -43,27 +44,83 @@
                             <span class="input-group-text">
                                 <i class="fa-solid fa-lock"></i>
                             </span>
-                            <input type="password" class="form-control" placeholder="••••••••">
+                            <input type="password" name="password" class="form-control"
+                                   placeholder="••••••••" required>
                         </div>
                     </div>
 
                     <!-- Remember -->
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox">
+                            <input class="form-check-input" type="checkbox" name="rememberMe">
                             <label class="form-check-label">Remember me</label>
                         </div>
-                        <a href="#" class="text-primary fw-medium">Forgot password?</a>
                     </div>
 
                     <!-- Login -->
-                    <button class="btn btn-primary w-100 fw-bold py-2 mb-4">
+                    <button type="submit" class="btn btn-primary w-100 fw-bold py-2 mb-4">
                         Login
                     </button>
-
-                   
                 </form>
+
             </div>
         </div>
     </div>
 </div>
+<script>
+    const alertBox = document.getElementById("loginAlert");
+
+    function showAlert(message, type = "danger") {
+        alertBox.className = `alert alert-${type}`;
+        alertBox.innerHTML = message;
+        alertBox.classList.remove("d-none");
+    }
+
+    function hideAlert() {
+        alertBox.classList.add("d-none");
+    }
+
+    document.getElementById("loginForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+        hideAlert();
+
+        const form = e.target;
+
+        const data = {
+            email: form.email?.value || "",
+            password: form.password?.value || "",
+            rememberMe: form.rememberMe?.checked || false
+        };
+
+        try {
+            const response = await fetch("/Login/Index", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                showAlert("Lỗi server, vui lòng thử lại sau", "danger");
+                return;
+            }
+
+            const result = await response.json();
+
+            if (result.success) {
+                showAlert(" Đăng nhập thành công, đang chuyển hướng...", "success");
+
+                setTimeout(() => {
+                    window.location.href = result.redirectUrl || "/";
+                }, 800);
+            } else {
+                showAlert(result.message || "Đăng nhập thất bại", "warning");
+            }
+
+        } catch (err) {
+            console.error(err);
+            showAlert(" Không thể kết nối server", "danger");
+        }
+    });
+</script>

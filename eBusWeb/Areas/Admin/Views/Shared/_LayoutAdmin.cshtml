@@ -1,4 +1,12 @@
-﻿<!DOCTYPE html>
+﻿@{
+    var fullName = Context.Session.GetString("FullName") ?? "User";
+    var avatarChar = fullName.Trim().Split(' ').Last().Substring(0, 1).ToUpper();
+    var area = ViewContext.RouteData.Values["area"]?.ToString();
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+}
+
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -18,6 +26,61 @@
     <link href="~/css/admin.css" rel="stylesheet" />
 
     @RenderSection("Styles", false)
+    <style>
+        .avatar-circle {
+            width: 42px;
+            height: 42px;
+            border-radius: 25%;
+            background: linear-gradient(135deg, rgba(157, 78, 221, 0.9), rgba(199, 125, 255, 0.9) );
+            color: #fff;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            text-transform: uppercase;
+        }
+
+        .action-buttons button {
+            border: none;
+            padding: 6px 10px;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            margin-left: 6px;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        /* 👁 View */
+        .btn-view {
+            background: linear-gradient(135deg, #42a5f5, #1e88e5);
+        }
+
+        /* ✏ Edit */
+        .btn-edit {
+            background: linear-gradient(135deg, #66bb6a, #43a047);
+        }
+
+        /* 🗑 Delete */
+        .btn-delete {
+            background: linear-gradient(135deg, #ef5350, #e53935);
+        }
+
+        /* Hover effect */
+        .action-buttons button:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+
+        /* Icon size */
+        .action-buttons i {
+            font-size: 1rem;
+        }
+
+    </style>
+
 </head>
 <body class="admin-body">
 
@@ -26,26 +89,59 @@
         <!-- Sidebar -->
         <aside class="admin-sidebar">
             <div class="sidebar-header d-flex align-items-center gap-3" style="margin-left: 12px;padding-top: 12px">
-                <img src="https://i.pravatar.cc/80?img=12" class="rounded-circle" width="42" />
-                <div>
-                    <div class="fw-bold">BusAdmin</div>
-                    <small class="text-muted">System Administrator</small>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="avatar-circle">
+                        @avatarChar
+                    </div>
+                   <div class="lh-sm">
+                        <div class="fw-bold">BusAdmin</div>
+                        <div class="text-muted">@fullName</div>
+                    </div>
                 </div>
+               
             </div>
 
             <hr />
 
             <nav class="nav flex-column gap-1">
-                <a class="nav-link active" asp-controller="Admin" asp-action="Index">
+
+                <a class="nav-link @(area == "Admin" && controller == "Dashboard" ? "active" : "")"
+                   href="/Admin/Dashboard">
                     <i class="fa-solid fa-chart-line"></i> Dashboard
                 </a>
-                <a class="nav-link" href="/Admin/User"><i class="fa-solid fa-users"></i> Users</a>
-                <a class="nav-link" href="#"><i class="fa-solid fa-route"></i> Routes</a>
-                <a class="nav-link" href="#"><i class="fa-solid fa-bus"></i> Trips</a>
-                <a class="nav-link" href="#"><i class="fa-solid fa-ticket"></i> Bookings</a>
-                <a class="nav-link" href="#"><i class="fa-solid fa-chart-pie"></i> Reports</a>
-                <a class="nav-link" href="#"><i class="fa-solid fa-gear"></i> Settings</a>
+
+                <a class="nav-link @(area == "Admin" && controller == "User" ? "active" : "")"
+                   href="/Admin/User">
+                    <i class="fa-solid fa-users"></i> Users
+                </a>
+
+                <a class="nav-link @(area == "Admin" && controller == "Route" ? "active" : "")"
+                   href="/Admin/Route">
+                    <i class="fa-solid fa-route"></i> Routes
+                </a>
+
+                <a class="nav-link @(area == "Admin" && controller == "Trip" ? "active" : "")"
+                   href="/Admin/Trip">
+                    <i class="fa-solid fa-bus"></i> Trips
+                </a>
+
+                <a class="nav-link @(area == "Admin" && controller == "Booking" ? "active" : "")"
+                   href="/Admin/Booking">
+                    <i class="fa-solid fa-ticket"></i> Bookings
+                </a>
+
+                <a class="nav-link @(area == "Admin" && controller == "Report" ? "active" : "")"
+                   href="/Admin/Report">
+                    <i class="fa-solid fa-chart-pie"></i> Reports
+                </a>
+
+                <a class="nav-link @(area == "Admin" && controller == "Setting" ? "active" : "")"
+                   href="/Admin/Setting">
+                    <i class="fa-solid fa-gear"></i> Settings
+                </a>
+
             </nav>
+
 
             <div class="sidebar-footer mt-auto">
                 <a class="nav-link text-danger" href="/Login">
@@ -58,7 +154,7 @@
         <div class="admin-main flex-grow-1 d-flex flex-column">
 
             <!-- Topbar -->
-            <header class="admin-topbar d-flex justify-content-between align-items-center" style="height: 77px;">
+            <header class="admin-topbar d-flex justify-content-between align-items-center" style="height: 71px;">
                 <h5 class="fw-bold mb-0">@ViewData["Header"]</h5>
 
                 <div class="d-flex align-items-center gap-3">

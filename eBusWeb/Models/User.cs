@@ -1,5 +1,6 @@
 ﻿using Supabase.Postgrest.Attributes;
 using Supabase.Postgrest.Models;
+using Newtonsoft.Json; // Thêm thư viện này
 
 namespace eBusWeb.Models
 {
@@ -25,7 +26,7 @@ namespace eBusWeb.Models
         public int Role { get; set; }
 
         [Column("authid")]
-        public Guid? AuthId { get; set; }
+        public Guid AuthId { get; set; }
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; }

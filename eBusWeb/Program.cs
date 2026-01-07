@@ -1,25 +1,41 @@
-using Supabase;
+﻿using Supabase;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // MVC
 builder.Services.AddControllersWithViews();
 
-// ===== SUPABASE CONFIG =====
-var supabaseUrl = builder.Configuration["Supabase:Url"];
-var supabaseKey = builder.Configuration["Supabase:ServiceKey"];
+// ✅ THÊM SESSION (BẮT BUỘC)
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
-builder.Services.AddSingleton(provider =>
+// ===== SUPABASE CONFIG =====
+// ===== ADMIN SUPABASE (SERVICE ROLE) =====
+builder.Services.AddSingleton<Supabase.Client>(provider =>
 {
     var options = new SupabaseOptions
     {
         AutoConnectRealtime = false
     };
 
-    return new Client(supabaseUrl, supabaseKey, options);
+    return new Supabase.Client(
+        builder.Configuration["Supabase:Url"],
+        builder.Configuration["Supabase:ServiceKey"],
+        options
+    );
 });
 
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+    var supabase = scope.ServiceProvider.GetRequiredService<Supabase.Client>();
+    await supabase.InitializeAsync();
+}
 
 // Pipeline
 if (!app.Environment.IsDevelopment())
@@ -31,6 +47,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+app.UseSession();
 app.UseAuthorization();
 app.MapControllerRoute(
     name: "areas",

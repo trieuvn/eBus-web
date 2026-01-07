@@ -18,6 +18,12 @@
     <link href="~/css/site.css" rel="stylesheet" />
 
     @RenderSection("Styles", required: false)
+    <style>
+        #loginAlert {
+            transition: all 0.3s ease;
+        }
+
+    </style>
 </head>
 <body>
 
@@ -29,8 +35,6 @@
                 <span class="fw-bold fs-4">BusBooker</span>
             </div>
             <div>
-                <span class="text-muted me-3 d-none d-sm-inline">Don't have an account?</span>
-                <a class="btn btn-outline-primary fw-bold" href="/Signup">Sign Up</a>
             </div>
         </div>
     </header>

@@ -105,12 +105,15 @@
                     <div class="card-body p-4">
                         <h6 class="fw-bold mb-3">Security</h6>
                         <p class="small text-muted">
-                            Trigger a password reset email for the user or set a temporary password.
+                            Change the user's password directly. The user will be required to use the new password on next login.
                         </p>
-                        <button type="button" class="btn btn-outline-primary w-100 rounded-3">
-                            <i class="bi bi-arrow-clockwise me-1"></i>
-                            Send Reset Link
+                        <button type="button"
+                                class="btn btn-outline-primary w-100 rounded-3 btn-change-password"
+                                data-id="@Model.Id">
+                            <i class="bi bi-key me-1"></i>
+                            Change Password
                         </button>
+
                     </div>
                 </div>
 
@@ -204,6 +207,58 @@
         </div>
     </div>
 </div>
+
+
+
+
+
+<div class="modal fade" id="changePasswordModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-key me-2 text-primary"></i>
+                    Change User Password
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body px-4">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">New Password</label>
+                    <input type="password"
+                           class="form-control"
+                           id="newPassword"
+                           placeholder="Enter new password">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Confirm Password</label>
+                    <input type="password"
+                           class="form-control"
+                           id="confirmPassword"
+                           placeholder="Confirm new password">
+                </div>
+
+                <div class="alert alert-danger d-none" id="passwordError">
+                    Passwords do not match.
+                </div>
+            </div>
+
+            <div class="modal-footer border-0 px-4 pb-4">
+                <button type="button"
+                        class="btn btn-primary w-100"
+                        id="submitChangePassword">
+                    <i class="bi bi-check-circle me-1"></i>
+                    Update Password
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
 
 <style>
     :root {
@@ -427,3 +482,89 @@
 </script>
 
 
+
+
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const modalEl = document.getElementById("changePasswordModal");
+        const modal = new bootstrap.Modal(modalEl);
+
+        let userId = null;
+
+        document.addEventListener("click", function (e) {
+            const btn = e.target.closest(".btn-change-password");
+            if (!btn) return;
+
+            userId = btn.dataset.id;
+
+            document.getElementById("newPassword").value = "";
+            document.getElementById("confirmPassword").value = "";
+            document.getElementById("passwordError").classList.add("d-none");
+
+            modal.show();
+        });
+
+        document.getElementById("submitChangePassword")
+            .addEventListener("click", async function () {
+
+                const pwd = document.getElementById("newPassword").value.trim();
+                const confirm = document.getElementById("confirmPassword").value.trim();
+                const error = document.getElementById("passwordError");
+
+                    if (!pwd || pwd !== confirm) {
+                    error.classList.remove("d-none");
+                    error.innerText = "Passwords do not match.";
+                    return;
+                }
+
+
+                const res = await fetch("/Admin/User/ChangePassword", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        userId: userId,
+                        newPassword: pwd
+                    })
+                });
+
+                   const notify = document.getElementById("notifyArea");
+
+    if (res.ok) {
+        modal.hide();
+
+        notify.innerHTML = `
+            <div class="alert alert-success d-flex align-items-center shadow-sm rounded-3 fade show" role="alert">
+                <i class="bi bi-check-circle-fill fs-4 me-3"></i>
+                <div>
+                    <strong>Password updated successfully!</strong><br>
+                    <small class="text-muted">
+                        Redirecting to user list...
+                    </small>
+                </div>
+            </div>
+        `;
+
+        setTimeout(() => {
+            window.location.href = "/Admin/User";
+        }, 1200);
+
+    } else {
+        notify.innerHTML = `
+            <div class="alert alert-danger d-flex align-items-center shadow-sm rounded-3 fade show" role="alert">
+                <i class="bi bi-x-circle-fill fs-4 me-3"></i>
+                <div>
+                    <strong>Password update failed!</strong><br>
+                    <small class="text-muted">
+                        Please try again.
+                    </small>
+                </div>
+            </div>
+        `;
+    }
+
+            });
+    });
+</script>

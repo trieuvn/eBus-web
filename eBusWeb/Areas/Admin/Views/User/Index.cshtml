@@ -9,11 +9,12 @@
 <div class="user-management-page">
 
     <!-- Breadcrumb -->
-    <div class="breadcrumb">
-        <span>Dashboard</span>
-        <span>/</span>
-        <strong>User Management</strong>
-    </div>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item small"><a href="/Admin/Dashboard"><i class="fa-solid fa-house me-1"></i>Dashboard</a></li>
+            <li class="breadcrumb-item small active" aria-current="page">User Management</li>
+        </ol>
+    </nav>
 
     <!-- Header -->
     <div class="page-header">
@@ -261,6 +262,25 @@
 
 
 <style>
+    /* Tinh chỉnh Breadcrumb */
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "\f105"; /* Icon angle-right từ FontAwesome */
+        font-family: "Font Awesome 6 Free";
+        font-weight: 900;
+        font-size: 0.7rem;
+        color: #adb5bd;
+    }
+
+    .breadcrumb-item a {
+        color: #6c757d;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+        .breadcrumb-item a:hover {
+            color: #0d6efd;
+        }
+
     .status.created {
     background: linear-gradient(135deg, #6ee7b7, #34d399);
     color: #4338ca;

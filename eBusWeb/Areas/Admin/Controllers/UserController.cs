@@ -1,4 +1,5 @@
 ﻿using eBusWeb.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Headers;
@@ -204,6 +205,21 @@ namespace eBusWeb.Areas.Admin.Controllers
             {
                 return StatusCode(500, ex.Message);
             }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.NewPassword))
+                return BadRequest("Password empty");
+
+              await _supabase
+             .From<User>()
+             .Set(u => u.Password, dto.NewPassword)
+             .Where(u => u.Id == dto.UserId)
+             .Update();
+
+            return Ok();
         }
 
 

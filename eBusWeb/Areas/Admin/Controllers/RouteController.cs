@@ -1,5 +1,6 @@
 ﻿using eBusWeb.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics.Contracts;
 using static Supabase.Postgrest.Constants;
 using Route = eBusWeb.Models.Route;
 namespace eBusWeb.Areas.Admin.Controllers
@@ -206,6 +207,35 @@ namespace eBusWeb.Areas.Admin.Controllers
             }
         }
 
+        public async Task<IActionResult> Edit(int id)
+        {
+            // 1. Lấy thông tin Route chi tiết
+            var routeRes = await _supabase
+                .From<Models.Route>()
+                .Filter("id", Operator.Equals, id)
+                .Get();
 
+            var selectedRoute = routeRes.Models.FirstOrDefault();
+
+            if (selectedRoute == null)
+            {
+                return NotFound();
+            }
+
+            // 2. Lấy danh sách các Stop thuộc Route này
+            var stopsRes = await _supabase
+                .From<RouteStop>()
+                .Filter("route_id", Operator.Equals, id)
+                .Order("stop_order", Ordering.Ascending)
+                .Get();
+
+            var stops = stopsRes.Models;
+
+            // 3. Truyền dữ liệu sang View
+            ViewBag.SelectedRoute = selectedRoute;
+            ViewBag.Stops = stops;
+
+            return View();
+        }
     }
 }

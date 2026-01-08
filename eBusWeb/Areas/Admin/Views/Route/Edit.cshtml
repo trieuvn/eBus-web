@@ -18,7 +18,7 @@
             <li class="breadcrumb-item extra-small active fw-bold text-primary" aria-current="page">Edit</li>
         </ol>
     </nav>
-
+    <div id="routeMessage" class="alert d-none mt-2" role="alert"></div>
     <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
         <div>
             <h6 class="fw-black text-dark mb-0">Edit Route: <span id="displayRouteName">@route?.Name</span></h6>
@@ -69,11 +69,12 @@
                                                 <div class="col-auto">
                                                     <label class="d-block text-muted extra-small mb-0">TYPE</label>
                                                     <select class="form-select form-select-sm border-0 bg-transparent p-0 shadow-none fw-semibold extra-small stop-type">
-                                                        <option value="0" selected="@(stop.StopType == 0)">Pickup</option>
-                                                        <option value="1" selected="@(stop.StopType == 1)">Drop-off</option>
-                                                        <option value="2" selected="@(stop.StopType == 2)">Waypoint</option>
+                                                        <option value="0" selected="@(stop.StopType == 1)">Pickup</option>
+                                                        <option value="1" selected="@(stop.StopType == 2)">Drop-off</option>
+                                                        <option value="2" selected="@(stop.StopType == 3)">Waypoint</option>
                                                     </select>
                                                 </div>
+
                                                 <div class="col-auto">
                                                     <button class="btn btn-link text-muted p-1 hover-danger" onclick="removeStop(this, @stop.Id)">
                                                         <i class="fa-solid fa-xmark"></i>
@@ -114,6 +115,7 @@
                             </div>
                         </div>
                     </div>
+                    <div id="mapContainer" style="width:100%; height:300px; max-height:400px; margin-top:20px; transition: all 0.3s;"></div>
 
                     <div class="d-grid gap-2 mt-4">
                         <button class="btn btn-primary btn-sm fw-bold py-2 shadow-sm" onclick="saveAllData()">
@@ -128,6 +130,47 @@
         </div>
     </div>
 </div>
+<script>
+    function updateRouteMap() {
+        // 1. Lấy giá trị từ ô "Route Display Name"
+        const routeInput = document.getElementById('routeName');
+        if (!routeInput) return;
+
+        const routeValue = routeInput.value.trim(); // vd: "Hải Phòng -> TPHCM"
+
+        // 2. Kiểm tra định dạng có dấu "->" không
+        if (routeValue.includes("->")) {
+            const parts = routeValue.split("->").map(s => s.trim());
+            const start = parts[0];
+            const end = parts[parts.length - 1]; // Lấy điểm cuối cùng
+
+            if (start && end) {
+                // 3. Tạo URL Google Maps Embed chính xác
+                // Sử dụng chế độ "place" hoặc "directions" của Google Maps
+
+                // Nếu KHÔNG CÓ API KEY, sử dụng link search cộng chuỗi (miễn phí):
+                const freeUrl = `https://maps.google.com/maps?q=${encodeURIComponent(start)}%20to%20${encodeURIComponent(end)}&output=embed`;
+
+                // 4. Nhúng vào div #mapContainer có sẵn trong HTML của bạn
+                const container = document.getElementById('mapContainer');
+                    container.innerHTML = `<iframe
+        width="100%"
+        height="500px"
+        style="border:0; border-radius: 8px;"
+        src="${freeUrl}"
+        allowfullscreen>
+    </iframe>`;
+
+            }
+        }
+    }
+
+    // Chạy khi trang load
+    window.addEventListener('load', updateRouteMap);
+
+    // Cập nhật map ngay lập tức khi người dùng sửa tên Route
+    document.getElementById('routeName').addEventListener('change', updateRouteMap);
+</script>
 
 <script>
     // 1. Khởi tạo Kéo thả (Sortable)
@@ -239,6 +282,104 @@
         } catch (err) {
             console.error(err);
             alert("Error saving data. Check console.");
+        }
+    }
+</script>
+<style>
+    #mapContainer {
+        width: 100%;
+        height: 300px;
+        max-height: 400px;
+        margin-top: 20px;
+        transition: all 0.3s ease-in-out;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+        #mapContainer:hover {
+            height: 500px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+</style>
+
+
+<script>
+
+    async function deleteRoute(routeId) {
+        if (!routeId) return;
+
+        if (!confirm('Are you sure you want to delete this route? This action cannot be undone.')) {
+            return;
+        }
+
+        const messageDiv = document.getElementById('routeMessage');
+
+        try {
+            const res = await fetch('/Admin/Route/Delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ Id: routeId }) // Gửi object JSON
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                messageDiv.className = 'alert alert-success';
+                messageDiv.textContent = data.message || 'Route deleted successfully!';
+                messageDiv.classList.remove('d-none');
+
+                // Reload hoặc redirect về trang danh sách routes
+                setTimeout(() => window.location.href = '/Admin/Route/Index', 1500);
+            } else {
+                messageDiv.className = 'alert alert-danger';
+                messageDiv.textContent = data.message || 'Error deleting route';
+                messageDiv.classList.remove('d-none');
+            }
+        } catch (err) {
+            messageDiv.className = 'alert alert-danger';
+            messageDiv.textContent = 'Server error: ' + err.message;
+            messageDiv.classList.remove('d-none');
+        }
+    }
+</script>
+
+<script>
+    async function handleDeleteRoute(routeId) {
+        if (!routeId) return;
+
+        // Thêm modal xác nhận hoặc alert đơn giản
+        if (!confirm("Are you sure you want to delete this route? All associated stops will also be deleted.")) {
+            return;
+        }
+
+        const messageDiv = document.getElementById('routeMessage');
+
+        try {
+            // Gọi API POST giống Controller
+            const response = await fetch('/Admin/Route/Delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ Id: routeId })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                messageDiv.className = 'alert alert-success';
+                messageDiv.textContent = data.message || 'Route deleted successfully!';
+                messageDiv.classList.remove('d-none');
+
+                // Redirect về danh sách route sau 1.5 giây
+                setTimeout(() => window.location.href = '/Admin/Route/Index', 1500);
+            } else {
+                messageDiv.className = 'alert alert-danger';
+                messageDiv.textContent = data.message || 'Error deleting route';
+                messageDiv.classList.remove('d-none');
+            }
+        } catch (err) {
+            messageDiv.className = 'alert alert-danger';
+            messageDiv.textContent = 'Server error: ' + err.message;
+            messageDiv.classList.remove('d-none');
         }
     }
 </script>

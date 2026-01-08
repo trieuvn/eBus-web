@@ -237,5 +237,41 @@ namespace eBusWeb.Areas.Admin.Controllers
 
             return View();
         }
+
+        [HttpPost]
+        [HttpPost]
+        public async Task<JsonResult> Delete([FromBody] RouteDeleteDto dto)
+        {
+            try
+            {
+                // 1️⃣ Xóa tất cả stops của route
+                await _supabase
+                    .From<RouteStop>()
+                    .Filter("route_id", Operator.Equals, dto.Id)
+                    .Delete();
+
+                // 2️⃣ Xóa route
+                await _supabase
+                    .From<Route>()
+                    .Filter("id", Operator.Equals, dto.Id)
+                    .Delete();
+
+                // Trả về kết quả thành công
+                return Json(new { success = true, message = "Route deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+
+
+
+        public class RouteDeleteDto
+        {
+            public int Id { get; set; }
+        }
+
     }
 }

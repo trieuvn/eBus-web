@@ -276,6 +276,21 @@
                     <p class="text-muted">Please select a route to manage its details.</p>
                 </div>
             }
+            <div class="delete-container d-flex justify-content-between align-items-center mt-4">
+                <div class="delete-text">
+                    <h6 class="fw-bold text-danger mb-1">Delete Route</h6>
+                    <p class="text-muted mb-0" style="font-size: 0.9rem;">
+                        This action cannot be undone. All associated bookings and schedule data will be permanently removed.
+                    </p>
+                </div>
+                <button type="button" 
+                        class="btn btn-outline-danger btn-delete-custom" 
+                        style="width: 200px;"
+                        onclick="deleteRoute(@ViewBag.SelectedRoute.Id)">
+                    Delete Route
+                </button>
+
+            </div>
         </div>
     </div>
 </div>
@@ -297,8 +312,36 @@
     </div>
   </div>
 </div>
-
 <style>
+    .delete-container {
+        background-color: #fff5f5; /* Màu nền hồng nhạt */
+        border: 1px solid #ffe3e3; /* Viền hồng nhạt */
+        border-radius: 12px;       /* Bo góc */
+        padding: 20px 25px;        /* Khoảng cách bên trong */
+    }
+
+    .btn-delete-custom {
+        background-color: white;
+        border: 1px solid #dee2e6;
+        color: #dc3545;
+        font-weight: 600;
+        padding: 8px 20px;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+
+    .btn-delete-custom:hover {
+        background-color: #dc3545;
+        color: white;
+        border-color: #dc3545;
+    }
+
+    .text-danger {
+        color: #a52a2a !important; /* Màu chữ đỏ đậm giống hình */
+    }
+</style>
+<style>
+
     /* Tinh chỉnh Breadcrumb */
     .breadcrumb-item + .breadcrumb-item::before {
         content: "\f105"; /* Icon angle-right từ FontAwesome */
@@ -559,4 +602,29 @@ document.querySelector(".btn-outline-primary").addEventListener('click', functio
 
 // Gọi khi trang load
 checkNoStopsMessage();
+</script>
+<script>
+async function deleteRoute(routeId) {
+    if (!confirm("Are you sure you want to delete this route?")) return;
+
+    try {
+        const res = await fetch('/Admin/Route/Delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ Id: routeId })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            alert(data.message || 'Route deleted successfully!');
+            // Reload page để cập nhật list routes
+            window.location.href = '/Admin/Route/Index';
+        } else {
+            alert(data.message || 'Error deleting route');
+        }
+    } catch (err) {
+        alert('Server error: ' + err.message);
+    }
+}
 </script>

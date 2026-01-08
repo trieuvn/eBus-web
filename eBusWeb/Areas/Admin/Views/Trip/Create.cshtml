@@ -1,0 +1,214 @@
+﻿
+<div class="container py-3" style="max-width: 920px;">
+
+    <!-- Breadcrumb -->
+    <div class="d-flex flex-wrap gap-2 align-items-center mb-2 small">
+        <a class="text-muted text-decoration-none" href="/Admin/Dashboard">Dashboard</a>
+        <i class="fa-solid fa-chevron-right text-muted"></i>
+        <a class="text-muted text-decoration-none" href="/Admin/Trip">Trips</a>
+        <i class="fa-solid fa-chevron-right text-muted"></i>
+        <span class="fw-semibold text-primary">Create New Trip</span>
+    </div>
+
+    <!-- Header -->
+    <div class="mb-3">
+        <h4 class="fw-bold mb-1">Create New Trip</h4>
+        <p class="text-muted mb-0 small">
+            Schedule a new bus journey by filling out the details below.
+        </p>
+    </div>
+    <div id="tripMessage" class="alert d-none" role="alert"></div>
+    <!-- Card -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-3">
+
+            <form method="post" class="row g-3">
+
+                <!-- Route & Schedule -->
+                <div class="col-12">
+                    <h6 class="fw-bold border-bottom pb-1 mb-2 text-primary">
+                        <i class="fa-solid fa-map me-2"></i>
+                        Route & Schedule
+                    </h6>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-semibold small">Select Route</label>
+                    <select id="routeSelect" class="form-select form-select-sm" style="width:100%">
+                        <option></option>
+                        @foreach (var r in ViewBag.Routes as List<eBusWeb.Models.Route>)
+                        {
+                            <option value="@r.Id">@r.Name</option>
+                        }
+                    </select>
+
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold small">Departure Time</label>
+                    <input id="departureTime" type="datetime-local" class="form-control form-control-sm" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold small">Arrival Time</label>
+                    <input id="arrivalTime" type="datetime-local" class="form-control form-control-sm" />
+                </div>
+
+                <!-- Bus Details -->
+                <div class="col-12 mt-2">
+                    <h6 class="fw-bold border-bottom pb-1 mb-2 text-primary">
+                        <i class="fa-solid fa-bus me-2"></i>
+                        Bus Details
+                    </h6>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold small">Bus Operator</label>
+                    <input id="operatorName" type="text"
+                           class="form-control form-control-sm"
+                           placeholder="GreenLine Travels" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold small">Bus Type</label>
+                    <select id="busType" class="form-select form-select-sm" style="width:100%">
+                        <option></option>
+                        @foreach (var type in ViewBag.BusTypes as List<string>)
+                        {
+                            <option value="@type">@type</option>
+                        }
+                    </select>
+                </div>
+
+
+                <!-- Pricing & Status -->
+                <div class="col-12 mt-2">
+                    <h6 class="fw-bold border-bottom pb-1 mb-2 text-primary">
+                        <i class="fa-solid fa-money-bill me-2"></i>
+                        Pricing & Status
+                    </h6>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold small">Base Price ($)</label>
+                    <input id="basePrice" type="number"
+                           class="form-control form-control-sm"
+                           placeholder="0.00" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold small">Status</label>
+                    <select id="status" class="form-select form-select-sm">
+                        <option selected value="1">Scheduled</option>
+                        <option value="2">Delayed</option>
+                        <option value="3">Cancelled</option>
+                        <option value="4">Completed</option>
+                    </select>
+                </div>
+
+                <!-- Actions -->
+                <div class="col-12 d-flex justify-content-end gap-2 pt-2 border-top mt-2">
+                    <a href="/Admin/Trip" class="btn btn-light btn-sm px-3">
+                        Cancel
+                    </a>
+                    <button type="button"
+                            onclick="createTrip()"
+                            class="btn btn-sm text-white px-3"
+                            style="background: linear-gradient(135deg, #1e88e5, #42a5f5);">
+                        <i class="fa-solid fa-plus me-1"></i>
+                        Create
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+
+    <script>
+        $(document).ready(function () {
+            // Khởi tạo Select2
+            $('#routeSelect').select2({
+                theme: 'bootstrap-5',
+                placeholder: 'Search route...',
+                allowClear: true,
+                width: '100%'
+            });
+        });
+                $('#busType').select2({
+            theme: 'bootstrap-5',
+            tags: true,
+            placeholder: 'Select or add bus type',
+            width: '100%'
+        });
+
+        // Hàm hiện thông báo
+        function showMessage(message, type) {
+            const msg = document.getElementById('tripMessage');
+            msg.className = `alert alert-${type}`;
+            msg.textContent = message;
+            msg.classList.remove('d-none');
+            setTimeout(() => msg.classList.add('d-none'), 3000);
+        }
+
+        // Hàm tạo Trip
+               async function createTrip() {
+
+            const routeValue = document.getElementById('routeSelect').value;
+            if (!routeValue) {
+                showMessage('Please select a route', 'warning');
+                return;
+            }
+
+            const data = {
+                routeId: parseInt(routeValue),
+                departureTime: document.getElementById('departureTime').value,
+                arrivalTime: document.getElementById('arrivalTime').value,
+                operatorName: document.getElementById('operatorName').value,
+                busType: document.getElementById('busType').value,
+                basePrice: parseInt(document.getElementById('basePrice').value) || 0,
+                status: parseInt(document.getElementById('status').value)
+            };
+
+            console.log(data); // 👈 debug rất quan trọng
+
+            try {
+                const res = await fetch('/Admin/Trip/Create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (!res.ok) {
+                    throw new Error('HTTP ' + res.status);
+                }
+
+                const result = await res.json();
+
+                if (result.success) {
+                    showMessage('Trip created successfully!', 'success');
+                    setTimeout(() => window.location.href = '/Admin/Trip', 1200);
+                } else {
+                    showMessage(result.message || 'Create failed', 'danger');
+                }
+
+            } catch (err) {
+                showMessage('Server error: ' + err.message, 'danger');
+            }
+        }
+
+    </script>
+}
+<style>
+    .select2-search__field {
+        padding: 6px 8px !important;
+        height: 32px !important;
+        font-size: 0.875rem;
+    }
+</style>
+

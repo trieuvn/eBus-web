@@ -1,0 +1,542 @@
+﻿@model IEnumerable<eBusWeb.Models.Trip>
+
+@{
+    var query = Context.Request.Query;
+    ViewData["Header"] = "Trip Management";
+    var currentPage = ViewBag.CurrentPage ?? 1;
+    var totalPages = ViewBag.TotalPages ?? 1;
+    int pageSize = ViewBag.PageSize;
+    var searchValue = string.IsNullOrWhiteSpace(query["search"])
+       ? null
+       : query["search"].ToString();
+
+    var statusValue = string.IsNullOrWhiteSpace(query["status"])
+        ? null
+        : query["status"].ToString();
+
+    var dateValue = string.IsNullOrWhiteSpace(query["date"])
+        ? null
+        : query["date"].ToString();
+}
+
+<div class="container-fluid py-3">
+
+    <!-- Breadcrumb + Title + Create Button -->
+    <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+
+        <!-- LEFT: Breadcrumb + Title (xếp dọc) -->
+        <div class="d-flex flex-column">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item small">
+                        <a href="/Admin/Dashboard" class="text-decoration-none text-muted">
+                            <i class="fa-solid fa-house me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item small active fw-bold text-primary">
+                        Trip Management
+                    </li>
+                </ol>
+            </nav>
+
+            <h3 class="fw-bold mb-0">Trip Management</h3>
+        </div>
+
+        <!-- RIGHT: Create button -->
+        <a href="/Admin/Trip/Create" class="btn btn-primary px-3" style="border-radius:8px;margin-top:20px;">
+            <i class="fa-solid fa-plus me-1"></i> Create
+        </a>
+    </div>
+
+
+    <!-- Error Message -->
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger">@ViewBag.Error</div>
+    }
+
+    <!-- Filter Container -->
+    <!-- Filter Container -->
+    <div class="bg-white rounded-xl border border-slate-200 p-3 shadow-sm mb-4 filter-container">
+        <div class="row g-3">
+
+            <!-- SEARCH -->
+            <div class="col-12 col-lg-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-slate-50 border-end-0">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </span>
+                    <input id="searchInput"
+                           name="search"
+                           type="text"
+                           placeholder="Search by Route ID, Operator..."
+                           class="form-control bg-slate-50 border-start-0 py-2"
+                           value="@Context.Request.Query["search"]" />
+                </div>
+            </div>
+
+            <!-- STATUS -->
+            <div class="col-6 col-lg-3">
+                <div class="input-group">
+                    <span class="input-group-text bg-slate-50 border-end-0">
+                        <i class="fa-solid fa-filter"></i>
+                    </span>
+                    <select id="statusFilter" name="status" class="form-select bg-slate-50 py-2">
+                        <option value="">All Statuses</option>
+                        <option value="1" @(query["status"] == "1" ? "selected" : "")>Scheduled</option>
+                        <option value="2" @(query["status"] == "2" ? "selected" : "")>Delayed</option>
+                        <option value="3" @(query["status"] == "3" ? "selected" : "")>Cancelled</option>
+                        <option value="4" @(query["status"] == "4" ? "selected" : "")>Completed</option>
+                    </select>
+
+                </div>
+            </div>
+
+            <!-- DATE -->
+            <div class="col-6 col-lg-3">
+                <div class="input-group">
+                    <span class="input-group-text bg-slate-50 border-end-0">
+                        <i class="fa-solid fa-calendar-day"></i>
+                    </span>
+                    <input id="dateFilter"
+                           name="date"
+                           type="date"
+                           class="form-control bg-slate-50 border-start-0 py-2"
+                           value="@Context.Request.Query["date"]" />
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- Table -->
+    <div class="table-responsive bg-white rounded-3 shadow-sm">
+        <table class="table table-hover align-middle mb-0 trip-table">
+            <thead class="table-light text-uppercase small text-muted">
+                <tr>
+                    <th>Route Info</th>
+                    <th>Operator</th>
+                    <th>Departure</th>
+                    <th>Arrival</th>
+                    <th>Type</th>
+                    <th>Price</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+
+            <tbody class="small">
+                @foreach (var trip in Model)
+                {
+                    <tr>
+                        <!-- Route -->
+                        <td>
+                            <div class="fw-semibold">Route #@trip.RouteId</div>
+                            <div class="text-muted small">ID: @trip.Id</div>
+                        </td>
+
+                        <!-- Operator -->
+                        <td class="fw-medium">@trip.OperatorName</td>
+
+                        <!-- Departure -->
+                        <td>
+                            <div>@trip.DepartureTime.ToString("dd/MM/yyyy")</div>
+                            <div class="text-muted small">@trip.DepartureTime.ToString("HH:mm")</div>
+                        </td>
+
+                        <!-- Arrival -->
+                        <td>
+                            <div>@trip.ArrivalTime.ToString("dd/MM/yyyy")</div>
+                            <div class="text-muted small">@trip.ArrivalTime.ToString("HH:mm")</div>
+                        </td>
+
+                        <!-- Type -->
+                        <td>
+                            <span class="badge badge-type
+                                @(trip.BusType.Contains("Limousine") ? "type-limousine" :
+                                                                trip.BusType.Contains("VIP") ? "type-vip" :
+                                                                trip.BusType.Contains("Giường") ? "type-sleeper" :
+                                                                "type-standard")">
+                                @trip.BusType
+                            </span>
+                        </td>
+
+                        <!-- Price -->
+                        <td class="fw-semibold">@trip.BasePrice.ToString("N0") đ</td>
+
+                        <!-- Status -->
+                        <td>
+                            @switch (trip.Status)
+                            {
+                                case 1:
+                                    <span class="badge badge-status status-scheduled">● Scheduled</span>
+                                    ;
+                                    break;
+                                case 2:
+                                    <span class="badge badge-status status-delayed">● Delayed</span>
+                                    ;
+                                    break;
+                                case 3:
+                                    <span class="badge badge-status status-cancelled">● Cancelled</span>
+                                    ;
+                                    break;
+                                default:
+                                    <span class="badge badge-status status-completed">● Completed</span>
+                                    ;
+                                    break;
+                            }
+                        </td>
+
+                        <!-- Actions -->
+                        <td class="text-end">
+                            <div class="d-flex justify-content-end gap-1">
+                                <a href="javascript:void(0)"
+                                   class="btn btn-sm btn-outline-primary btn-view-trip"
+                                   data-id="@trip.Id"
+                                   title="View">
+                                    <i class="fa-solid fa-eye"></i>
+                                </a>
+                                <a href="#" class="btn btn-sm btn-outline-success" title="Edit">
+                                    <i class="fa-solid fa-pen"></i>
+                                </a>
+                                <a href="#" class="btn btn-sm btn-outline-danger" title="Delete">
+                                    <i class="fa-solid fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+  <div class="d-flex justify-content-between align-items-center mt-3 pagination-wrap">
+
+    <!-- LEFT INFO -->
+    <span class="pagination-info">
+        Showing
+        <strong>@((currentPage - 1) * pageSize + 1)</strong>
+        to
+        <strong>@Math.Min(currentPage * pageSize, ViewBag.TotalCount)</strong>
+        of
+        <strong>@ViewBag.TotalCount</strong>
+        results
+    </span>
+
+    <!-- RIGHT CONTROLS -->
+    <div class="d-flex gap-2">
+
+        <!-- PREVIOUS -->
+        <a class="btn btn-pagination @(currentPage == 1 ? "disabled" : "")"
+           href="@(currentPage == 1 ? "#" :
+               Url.Action("Index", new {
+                   page = currentPage - 1,
+                   search = searchValue,
+                   status = statusValue,
+                   date = dateValue
+               }))">
+            Previous
+        </a>
+
+        <!-- NEXT -->
+        <a class="btn btn-pagination @(currentPage == totalPages ? "disabled" : "")"
+           href="@(currentPage == totalPages ? "#" :
+               Url.Action("Index", new {
+                   page = currentPage + 1,
+                   search = searchValue,
+                   status = statusValue,
+                   date = dateValue
+               }))">
+            Next
+        </a>
+
+    </div>
+</div>
+
+</div>
+
+<div class="modal fade" id="tripDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content rounded-4">
+
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">
+                    <i class="fa-solid fa-route me-2 text-primary"></i>
+                    Trip Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <div id="tripDetailContent" class="small text-muted text-center">
+                    Loading...
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    .table-sm td, .table-sm th {
+        padding: 0.35rem 0.5rem;
+    }
+
+    .badge.bg-purple {
+        background-color: #7e22ce;
+    }
+
+    .filter-container .form-control,
+    .filter-container .form-select {
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+    }
+        /* Table polish */
+        .trip-table th {
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
+        }
+
+        .trip-table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        /* TYPE badges */
+        .badge-type {
+            font-weight: 500;
+            font-size: 0.72rem;
+            padding: 0.35em 0.6em;
+            border-radius: 999px;
+        }
+
+        .type-standard {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .type-sleeper {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .type-vip {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+
+        .type-limousine {
+            background: #7c3aed;
+            color: #fff;
+        }
+
+        /* STATUS badges */
+        .badge-status {
+            font-weight: 500;
+            font-size: 0.7rem;
+            padding: 0.35em 0.6em;
+            border-radius: 999px;
+        }
+
+        .status-scheduled {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .status-delayed {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .status-completed {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .status-cancelled {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        /* Pagination wrapper */
+        .pagination-wrap {
+            padding: 10px 12px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        /* Left text */
+        .pagination-info {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        /* Buttons */
+        .btn-pagination {
+            font-size: 0.75rem;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            background-color: #fff;
+            color: #334155;
+            text-decoration: none;
+            transition: all 0.15s ease-in-out;
+        }
+
+            .btn-pagination:hover {
+                background-color: #f8fafc;
+                border-color: #cbd5f5;
+                color: #1e293b;
+            }
+
+            /* Disabled state */
+            .btn-pagination.disabled {
+                pointer-events: none;
+                opacity: 0.45;
+                background-color: #f8fafc;
+            }
+
+</style>
+    <script>
+        const searchInput = document.getElementById("searchInput");
+        const statusFilter = document.getElementById("statusFilter");
+        const dateFilter = document.getElementById("dateFilter");
+
+        function applyFilter() {
+            const params = new URLSearchParams(window.location.search);
+
+            params.set("page", 1); // reset page
+
+            if (searchInput.value)
+                params.set("search", searchInput.value);
+            else
+                params.delete("search");
+
+            if (statusFilter.value)
+                params.set("status", statusFilter.value);
+            else
+                params.delete("status");
+
+            if (dateFilter.value)
+                params.set("date", dateFilter.value);
+            else
+                params.delete("date");
+
+            window.location.search = params.toString();
+        }
+
+        searchInput.addEventListener("keyup", debounce(applyFilter, 400));
+        statusFilter.addEventListener("change", applyFilter);
+        dateFilter.addEventListener("change", applyFilter);
+
+        function debounce(fn, delay) {
+            let timeout;
+            return function () {
+                clearTimeout(timeout);
+                timeout = setTimeout(fn, delay);
+            };
+        }
+    </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        document.querySelectorAll(".btn-view-trip").forEach(btn => {
+            btn.addEventListener("click", async function () {
+
+                const id = this.dataset.id;
+                const modalEl = document.getElementById("tripDetailModal");
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+                const contentEl = document.getElementById("tripDetailContent");
+                contentEl.innerHTML = "Loading...";
+                modal.show();
+
+                const res = await fetch(`/Admin/Trip/GetTripDetail?id=${id}`);
+                const data = await res.json();
+
+                // ✅ TÁCH ROUTE NAME
+                let start = "", end = "";
+                if (data.routeName && data.routeName.includes("->")) {
+                    [start, end] = data.routeName.split("->").map(x => x.trim());
+                }
+
+                // ✅ GOOGLE MAP EMBED
+                const mapUrl = start && end
+                    ? `https://www.google.com/maps?q=${encodeURIComponent(start)}+to+${encodeURIComponent(end)}&output=embed`
+                    : "";
+
+                contentEl.innerHTML = `
+                    <!-- MAP -->
+                    ${mapUrl ? `
+                    <div class="mb-3 rounded-3 overflow-hidden border">
+                        <iframe
+                            src="${mapUrl}"
+                            width="100%"
+                            height="240"
+                            style="border:0;"
+                            loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade">
+                        </iframe>
+                    </div>` : ""}
+
+                    <!-- ROUTE TITLE -->
+                    <div class="mb-3">
+                        <h6 class="fw-bold mb-1">
+                            <i class="fa-solid fa-route me-2 text-primary"></i>
+                            ${data.routeName}
+                        </h6>
+                        <small class="text-muted">
+                            Estimated duration: ${data.routeDuration} minutes
+                        </small>
+                    </div>
+
+                    <!-- DETAILS -->
+                    <div class="row g-3 small">
+                        <div class="col-md-6">
+                            <div class="text-muted">Operator</div>
+                            <div class="fw-semibold">${data.operatorName}</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="text-muted">Bus Type</div>
+                            <div class="fw-semibold">${data.busType}</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="text-muted">Departure</div>
+                            <div class="fw-semibold">${data.departureTime}</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="text-muted">Arrival</div>
+                            <div class="fw-semibold">${data.arrivalTime}</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="text-muted">Price</div>
+                            <div class="fw-semibold text-success">
+                                ${data.basePrice.toLocaleString()} đ
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="text-muted">Status</div>
+                            <div class="fw-semibold">
+                                ${renderStatus(data.status)}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        });
+
+    });
+
+    function renderStatus(status) {
+        switch (status) {
+            case 1: return "<span class='badge bg-success'>Scheduled</span>";
+            case 2: return "<span class='badge bg-warning text-dark'>Delayed</span>";
+            case 3: return "<span class='badge bg-danger'>Cancelled</span>";
+            default: return "<span class='badge bg-secondary'>Completed</span>";
+        }
+    }
+</script>
+

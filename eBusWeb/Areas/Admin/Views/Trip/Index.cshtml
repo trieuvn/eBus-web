@@ -197,10 +197,13 @@
                                    title="View">
                                     <i class="fa-solid fa-eye"></i>
                                 </a>
-                                <a href="#" class="btn btn-sm btn-outline-success" title="Edit">
+                                <a href="/Admin/Trip/Edit/@trip.Id" class="btn btn-sm btn-outline-success" title="Edit">
                                     <i class="fa-solid fa-pen"></i>
                                 </a>
-                                <a href="#" class="btn btn-sm btn-outline-danger" title="Delete">
+                                <a class="btn btn-sm btn-outline-danger btn-delete-trip"
+                                   title="Delete"
+                                   data-id="@trip.Id"
+                                   data-route="@trip.RouteId">
                                     <i class="fa-solid fa-trash"></i>
                                 </a>
                             </div>
@@ -255,29 +258,56 @@
 </div>
 
 </div>
-
 <div class="modal fade" id="tripDetailModal" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content rounded-4">
-
             <div class="modal-header">
-                <h5 class="modal-title fw-bold">
-                    <i class="fa-solid fa-route me-2 text-primary"></i>
-                    Trip Details
-                </h5>
+                <h5 class="modal-title fw-bold">Trip Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
+            <div class="modal-body" id="tripDetailContent">
+                Loading...
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal Delete Trip -->
+<div class="modal fade" id="deleteTripModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-body p-4 text-center">
+                <div class="d-inline-flex align-items-center justify-content-center mb-3"
+                     style="width: 80px; height: 80px; background-color: #fef2f2; border-radius: 50%;">
+                    <i class="fa-solid fa-triangle-exclamation fs-1 text-danger"></i>
+                </div>
 
-            <div class="modal-body">
-                <div id="tripDetailContent" class="small text-muted text-center">
-                    Loading...
+                <!-- Trip ID sẽ được update bằng JS -->
+                <h3 class="fw-bold mb-3" id="deleteTripTitle">Delete Trip #?</h3>
+
+                <div id="deleteTripContent"></div>
+
+                <div class="d-flex gap-2 mt-4">
+                    <button type="button" class="btn btn-outline-secondary py-2 w-100 fw-bold" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="confirmDeleteTripBtn" class="btn btn-danger py-2 w-100 fw-bold d-flex align-items-center justify-content-center gap-2">
+                        <i class="fa-solid fa-trash-can"></i> Confirm Deletion
+                    </button>
                 </div>
             </div>
-
         </div>
     </div>
 </div>
 
+<div id="successToast" class="toast align-items-center text-white bg-success border-0 position-fixed bottom-0 end-0 m-3" role="alert" aria-live="assertive" aria-atomic="true" style="display:none;">
+    <div class="d-flex">
+        <div class="toast-body">
+            Xóa thành công!
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+</div>
 <style>
     .table-sm td, .table-sm th {
         padding: 0.35rem 0.5rem;
@@ -393,6 +423,31 @@
                 opacity: 0.45;
                 background-color: #f8fafc;
             }
+    /* Làm đẹp Icon trong Summary */
+    .summary-icon {
+        width: 36px;
+        height: 36px;
+        background-color: #ffffff; /* Nền trắng cho icon nổi trên nền xám nhẹ */
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6c757d;
+        border: 1px solid #eee;
+        flex-shrink: 0;
+    }
+
+    /* Modal bo góc lớn hiện đại */
+    .rounded-4 {
+        border-radius: 1.2rem !important;
+    }
+
+    /* Nút bấm dài ra cho dễ bấm */
+    .modal-footer .btn {
+        padding: 10px 25px;
+        font-weight: 600;
+        border-radius: 8px;
+    }
 
 </style>
     <script>
@@ -538,5 +593,99 @@
             default: return "<span class='badge bg-secondary'>Completed</span>";
         }
     }
+            document.addEventListener("DOMContentLoaded", function() {
+        const deleteModalEl = document.getElementById("deleteTripModal");
+        const deleteModal = new bootstrap.Modal(deleteModalEl);
+        const deleteContent = document.getElementById("deleteTripContent");
+        const confirmDeleteBtn = document.getElementById("confirmDeleteTripBtn");
+
+        let currentTripId = null;
+
+        document.querySelectorAll(".btn-delete-trip").forEach(btn => {
+            btn.addEventListener("click", async function(e) {
+                e.preventDefault();
+
+                currentTripId = this.dataset.id;
+
+                // Gọi API lấy chi tiết Trip
+                try {
+                    const res = await fetch(`/Admin/Trip/GetTripDetail?id=${currentTripId}`);
+                    const data = await res.json();
+                    deleteTripTitle.textContent = `Delete Trip #${currentTripId}?`;
+                           deleteContent.innerHTML = `
+        <p class="text-muted px-4 mb-4" style="font-size: 0.95rem;">
+            Are you sure you want to remove this trip from the schedule? This action
+            <span class="text-danger fw-bold">cannot be undone</span> and will cancel bookings
+        </p>
+
+        <div class="trip-card text-start p-3 mx-2 rounded-3" style="background-color: #f8f9fa; border: 1px solid #f1f3f5;">
+            <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 0.75rem; letter-spacing: 0.5px;">Trip Summary</h6>
+
+            <div class="d-flex align-items-center mb-3">
+                <div class="summary-icon me-3"><i class="fa-solid fa-route"></i></div>
+                <div>
+                    <small class="text-muted d-block" style="font-size: 0.8rem;">Route</small>
+                    <span class="fw-bold text-dark">${data.routeName}</span>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center mb-3">
+                <div class="summary-icon me-3"><i class="fa-solid fa-clock"></i></div>
+                <div>
+                    <small class="text-muted d-block" style="font-size: 0.8rem;">Departure</small>
+                    <span class="fw-bold text-dark">${data.departureTime}</span>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center mb-3">
+                <div class="summary-icon me-3"><i class="fa-solid fa-bus"></i></div>
+                <div>
+                    <small class="text-muted d-block" style="font-size: 0.8rem;">Bus</small>
+                    <span class="fw-bold text-dark">${data.busType}</span>
+                </div>
+            </div>
+
+        </div>
+    `;
+                    deleteModal.show();
+
+                } catch(err) {
+                    alert("Lỗi tải dữ liệu trip: " + err.message);
+                }
+            });
+        });
+
+        confirmDeleteBtn.addEventListener("click", async () => {
+            if(!currentTripId) return;
+
+            try {
+                const res = await fetch(`/Admin/Trip/Delete/${currentTripId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
+                if(data.success) {
+            // Xóa row khỏi bảng
+            const row = document.querySelector(`.btn-delete-trip[data-id='${currentTripId}']`)?.closest("tr");
+            if(row) row.remove();
+
+            // Hiển thị toast thành công
+            const toastEl = document.getElementById("successToast");
+            toastEl.querySelector(".toast-body").textContent = data.message || "Xóa thành công!";
+            toastEl.style.display = "block"; // hiển thị
+            const bsToast = new bootstrap.Toast(toastEl, { delay: 2500 }); 
+            bsToast.show();
+        } else {
+            alert(data.message || "Xóa thất bại!");
+        }
+            } catch(err) {
+                alert("Lỗi server: " + err.message);
+            } finally {
+                deleteModal.hide();
+                currentTripId = null;
+            }
+        });
+    });
+
 </script>
 

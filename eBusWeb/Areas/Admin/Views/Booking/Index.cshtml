@@ -1,0 +1,246 @@
+﻿@model IEnumerable<eBusWeb.Models.Booking>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Management</title>
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+          prefix: 'tw-',
+          corePlugins: { preflight: false }, // giữ nguyên style layout cũ
+          theme: { extend: {} }
+        }
+    </script>
+
+    <!-- Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+
+    <style>
+        body {
+            background-color: #F8FAFC;
+            color: #1E293B;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+            font-size: 20px;
+        }
+
+        .stat-card {
+            border: 1px solid #F1F5F9;
+            transition: all 0.2s;
+        }
+
+            .stat-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+            }
+    </style>
+</head>
+<body>
+
+    <!-- Wrapper scope Tailwind -->
+    <div class="tw-p-8 tw-max-w-7xl tw-mx-auto">
+
+        <!-- Breadcrumb -->
+        <nav class="tw-mb-6" aria-label="breadcrumb">
+            <ol class="tw-flex tw-items-center tw-text-sm tw-text-slate-600 tw-bg-white tw-px-3 tw-py-2 tw-rounded-lg tw-shadow-sm tw-gap-2 tw-list-none">
+                <!-- Dashboard link -->
+                <li class="tw-flex tw-items-center tw-gap-1">
+                    <span class="material-symbols-outlined tw-text-[18px]">home</span>
+                    <a href="/Admin/Dashboard" class="tw-no-underline hover:tw-text-blue-600">Dashboard</a>
+                </li>
+
+                <!-- Separator -->
+                <li>
+                    <span class="tw-text-slate-300">/</span>
+                </li>
+
+                <!-- Current page -->
+                <li class="tw-flex tw-items-center tw-gap-1 tw-font-semibold tw-text-slate-700">
+                    <span class="material-symbols-outlined tw-text-[16px]">bookmark</span>
+                    Booking Management
+                </li>
+            </ol>
+        </nav>
+
+
+        <!-- Stats Cards -->
+        <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-4 tw-gap-4 tw-mb-8">
+
+            <!-- Total Bookings -->
+            <div class="stat-card tw-bg-white tw-p-5 tw-rounded-2xl tw-flex tw-flex-col tw-justify-between">
+                <div class="tw-flex tw-justify-between">
+                    <div>
+                        <p class="tw-text-slate-500 tw-text-sm tw-font-medium">Total Bookings</p>
+                        <h3 class="tw-text-[28px] tw-font-bold tw-mt-1">@ViewBag.TotalBookings</h3>
+                    </div>
+                    <div class="tw-w-10 tw-h-10 tw-bg-blue-50 tw-rounded-full tw-flex tw-items-center tw-justify-center">
+                        <span class="material-symbols-outlined tw-text-blue-600">confirmation_number</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Revenue Today -->
+            <div class="stat-card tw-bg-white tw-p-5 tw-rounded-2xl tw-flex tw-flex-col tw-justify-between">
+                <div class="tw-flex tw-justify-between">
+                    <div>
+                        <p class="tw-text-slate-500 tw-text-sm tw-font-medium">Revenue</p>
+                        <h3 class="tw-text-[28px] tw-font-bold tw-mt-1 tw-whitespace-nowrap">
+                            @{
+                                double revenue = ViewBag.RevenueToday;
+                                string displayRevenue;
+
+                                if (revenue >= 1_000_000_000)
+                                    displayRevenue = $"{revenue / 1_000_000_000:N2}T ₫";
+                                else if (revenue >= 1_000_000)
+                                    displayRevenue = $"{revenue / 1_000_000:N2}M ₫";
+                                else if (revenue >= 1_000)
+                                    displayRevenue = $"{revenue / 1_000:N2}K ₫";
+                                else
+                                    displayRevenue = $"{revenue:N0} ₫";
+                            }
+                            @displayRevenue
+                        </h3>
+                    </div>
+                    <div class="tw-w-10 tw-h-10 tw-bg-emerald-50 tw-rounded-full tw-flex tw-items-center tw-justify-center">
+                        <span class="material-symbols-outlined tw-text-emerald-600">payments</span>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Pending -->
+            <div class="stat-card tw-bg-white tw-p-5 tw-rounded-2xl tw-flex tw-flex-col tw-justify-between">
+                <div class="tw-flex tw-justify-between">
+                    <div>
+                        <p class="tw-text-slate-500 tw-text-sm tw-font-medium">Pending</p>
+                        <h3 class="tw-text-[28px] tw-font-bold tw-mt-1">@ViewBag.PendingCount</h3>
+                    </div>
+                    <div class="tw-w-10 tw-h-10 tw-bg-orange-50 tw-rounded-full tw-flex tw-items-center tw-justify-center">
+                        <span class="material-symbols-outlined tw-text-orange-600">pending_actions</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seats Sold -->
+            <div class="stat-card tw-bg-white tw-p-5 tw-rounded-2xl tw-flex tw-flex-col tw-justify-between">
+                <div class="tw-flex tw-justify-between">
+                    <div>
+                        <p class="tw-text-slate-500 tw-text-sm tw-font-medium">Seats Sold</p>
+                        <h3 class="tw-text-[28px] tw-font-bold tw-mt-1">@ViewBag.SeatsSold</h3>
+                    </div>
+                    <div class="tw-w-10 tw-h-10 tw-bg-purple-50 tw-rounded-full tw-flex tw-items-center tw-justify-center">
+                        <span class="material-symbols-outlined tw-text-purple-600">event_seat</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- Table Example -->
+        <div class="tw-bg-white tw-rounded-2xl tw-border tw-border-slate-100 tw-shadow-sm tw-overflow-hidden">
+            <table class="tw-w-full tw-border-collapse">
+                <thead>
+                    <tr class="tw-bg-[#F8FAFC] tw-border-b tw-border-slate-100">
+                        <th class="tw-px-6 tw-py-4 tw-text-left tw-text-[11px] tw-font-bold tw-text-slate-400 tw-uppercase tw-tracking-wider">Booking ID</th>
+                        <th class="tw-px-6 tw-py-4 tw-text-left tw-text-[11px] tw-font-bold tw-text-slate-400 tw-uppercase tw-tracking-wider">Contact / User</th>
+                        <th class="tw-px-6 tw-py-4 tw-text-left tw-text-[11px] tw-font-bold tw-text-slate-400 tw-uppercase tw-tracking-wider">Trip & Route</th>
+                        <th class="tw-px-6 tw-py-4 tw-text-left tw-text-[11px] tw-font-bold tw-text-slate-400 tw-uppercase tw-tracking-wider">Amount</th>
+                        <th class="tw-px-6 tw-py-4 tw-text-left tw-text-[11px] tw-font-bold tw-text-slate-400 tw-uppercase tw-tracking-wider">Status</th>
+                        <th class="tw-px-6 tw-py-4"></th>
+                    </tr>
+                </thead>
+                <tbody class="tw-divide-y tw-divide-slate-50">
+                    @foreach (var booking in Model)
+                    {
+                        <tr class="hover:tw-bg-slate-50/50 tw-transition-colors">
+                            <td class="tw-px-6 tw-py-5">#BK-@booking.Id</td>
+                            <td class="tw-px-6 tw-py-5">
+                                @booking.ContactName <br />
+                                <span class="tw-text-slate-400">@booking.ContactMobile</span>
+                            </td>
+                            <td class="tw-px-6 tw-py-5">@booking.PickupStopId → @booking.DropoffStopId</td>
+                            <td class="tw-px-6 tw-py-5">
+                                @{
+                                    double amount = booking.TotalAmount;
+                                    string displayAmount;
+
+                                    if (amount >= 1_000_000_000)
+                                        displayAmount = $"{amount / 1_000_000_000:N2}T ₫";
+                                    else if (amount >= 1_000_000)
+                                        displayAmount = $"{amount / 1_000_000:N2}M ₫";
+                                    else if (amount >= 1_000)
+                                        displayAmount = $"{amount / 1_000:N2}K ₫";
+                                    else
+                                        displayAmount = $"{amount:N0} ₫";
+                                }
+                                @displayAmount
+                            </td>
+
+                            <td class="tw-px-6 tw-py-5">
+                                @{
+                                    string statusText = booking.BookingStatus switch
+                                    {
+                                        0 => "Pending",
+                                        1 => "Confirmed",
+                                        2 => "Cancelled",
+                                        _ => "Unknown"
+                                    };
+                                    string statusColor = booking.BookingStatus switch
+                                    {
+                                        0 => "tw-bg-orange-50 tw-text-orange-600",
+                                        1 => "tw-bg-emerald-50 tw-text-emerald-600",
+                                        2 => "tw-bg-rose-50 tw-text-rose-600",
+                                        _ => "tw-bg-slate-50 tw-text-slate-600"
+                                    };
+                                }
+                                <span class="@statusColor tw-px-2 tw-py-1 tw-rounded-full tw-text-[11px] tw-font-bold">@statusText</span>
+                            </td>
+                            <td class="tw-px-6 tw-py-5">
+                                <div class="tw-flex tw-gap-2 tw-justify-end">
+                                    <button title="View" class="tw-bg-blue-50 tw-text-blue-600 tw-p-2 tw-rounded-full hover:tw-bg-blue-100 hover:tw-shadow-md tw-transition tw-outline-none tw-border-none focus:tw-ring-0 active:tw-ring-0 active:tw-shadow-none">
+                                        <span class="material-symbols-outlined tw-text-[18px]">visibility</span>
+                                    </button>
+                                    <a href="@Url.Action("Edit", "Booking", new { id = booking.Id })"
+                                       title="Edit"
+                                       class="tw-bg-amber-50 tw-text-amber-600 tw-p-2 tw-rounded-full hover:tw-bg-amber-100 hover:tw-shadow-md tw-transition tw-outline-none tw-border-none focus:tw-ring-0 active:tw-ring-0 active:tw-shadow-none">
+                                        <span class="material-symbols-outlined tw-text-[18px]">edit</span>
+                                    </a>
+
+                                    <button title="Delete" class="tw-bg-rose-50 tw-text-rose-600 tw-p-2 tw-rounded-full hover:tw-bg-rose-100 hover:tw-shadow-md tw-transition tw-outline-none tw-border-none focus:tw-ring-0 active:tw-ring-0 active:tw-shadow-none">
+                                        <span class="material-symbols-outlined tw-text-[18px]">delete</span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+
+            </table>
+        </div>
+        <div class="tw-flex tw-justify-end tw-mt-4 tw-gap-2">
+            <!-- Previous button -->
+            <a href="@Url.Action("Index", new { page = (ViewBag.CurrentPage > 1 ? ViewBag.CurrentPage - 1 : 1) })"
+               class="tw-no-underline tw-px-3 tw-py-1 tw-rounded-md tw-border tw-border-blue-200 tw-bg-white tw-text-blue-600 hover:tw-bg-blue-50 @(ViewBag.CurrentPage == 1 ? "tw-opacity-50 tw-cursor-not-allowed" : "")">
+                Previous
+            </a>
+
+            <!-- Next button -->
+            <a href="@Url.Action("Index", new { page = (ViewBag.CurrentPage < ViewBag.TotalPages ? ViewBag.CurrentPage + 1 : ViewBag.TotalPages) })"
+               class="tw-no-underline tw-px-3 tw-py-1 tw-rounded-md tw-border tw-border-blue-200 tw-bg-white tw-text-blue-600 hover:tw-bg-blue-50 @(ViewBag.CurrentPage == ViewBag.TotalPages ? "tw-opacity-50 tw-cursor-not-allowed" : "")">
+                Next
+            </a>
+        </div>
+
+
+
+
+    </div>
+</body>
+</html>

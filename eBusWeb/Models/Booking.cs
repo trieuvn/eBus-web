@@ -16,10 +16,10 @@ namespace eBusWeb.Models
         public long TripId { get; set; }
 
         [Column("pickup_stop_id")]
-        public int PickupStopId { get; set; }
+        public int? PickupStopId { get; set; }
 
         [Column("dropoff_stop_id")]
-        public int DropoffStopId { get; set; }
+        public int? DropoffStopId { get; set; }
 
         [Column("contact_name")]
         public string ContactName { get; set; }

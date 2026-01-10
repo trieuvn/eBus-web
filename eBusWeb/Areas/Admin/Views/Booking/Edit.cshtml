@@ -107,9 +107,7 @@
                     <button type="button" onclick="window.location.href='/Admin/Booking'" class="flex items-center justify-center rounded-lg h-9 px-3 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark text-text-main dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 text-sm font-medium transition-colors">
                     <span class="material-symbols-outlined text-base mr-1">arrow_back</span> Back
                 </button>
-                <button class="flex items-center justify-center rounded-lg h-9 px-3 bg-white dark:bg-surface-dark border border-teal-200 dark:border-teal-900 text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 text-sm font-medium transition-colors">
-                    <span class="material-symbols-outlined text-base mr-1">cancel</span> Cancel
-                </button>
+                
             </div>
         </div>
 
@@ -265,8 +263,9 @@
                             <span class="material-symbols-outlined text-primary">groups</span> Passengers
                         </h3>
                             <button id="btnAddPassenger"
-                                    type="button" class="text-primary hover:bg-primary/10 rounded-full p-1 transition-colors focus:outline-none focus:ring-0 border-0">
-                                <span class="material-symbols-outlined">add</span>
+                                    type="button"
+                                    class="text-primary hover:bg-primary/10 rounded-full p-1 transition-colors focus:outline-none focus:ring-0 border-0">
+                                <span class="material-symbols-outlined">groups</span>
                             </button>
                     </div>
                     <div class="divide-y divide-border-light dark:divide-border-dark text-sm">
@@ -361,14 +360,6 @@
             </div>
         </div>
 
-        <!-- Save button -->
-        <div class="mt-4 flex justify-end">
-            <button id="saveBtn" class="bg-blue-500 text-white px-4 py-2 rounded-lg
-                         hover:bg-blue-600 transition border-0 focus:outline-none">
-                Save
-            </button>
-        </div>
-
     </div>
 </div>
 
@@ -427,133 +418,141 @@
     }
 </script>
 <script>
-    btnAddPassenger.onclick = () => addPassengerModal.classList.remove('hidden');
-    closeModal.onclick = () => addPassengerModal.classList.add('hidden');
+    document.addEventListener('DOMContentLoaded', () => {
+        // Modal buttons
+        const btnAddPassenger = document.getElementById('btnAddPassenger');
+        const addPassengerModal = document.getElementById('addPassengerModal');
+        const closeModal = document.getElementById('closeModal');
 
-</script>
-<script>
-        const leftRows = ['A', 'B', 'C', 'D', 'E'];
-    const rightRows = ['F', 'G', 'H', 'I', 'J'];
-    const seatMap = document.getElementById('seatMap');
-    let selectedSeat = null;
+        // Seat map & passenger list
+        const seatMap = document.getElementById('seatMap');
+        const passengerList = document.getElementById('passengerList');
 
-    const occupiedSeats = ['A1', 'A2', 'C2', 'F1'];
+        const bookingId = document.querySelector('input[name="Booking.Id"]').value;
+        let selectedSeat = null;
 
-    seatMap.style.position = 'relative';
-    seatMap.className = 'absolute inset-0 flex justify-center';
+        btnAddPassenger.onclick = () => addPassengerModal.classList.remove('hidden');
+        closeModal.onclick = () => addPassengerModal.classList.add('hidden');
 
-    const wrapper = document.createElement('div');
-    // --- PHẦN CHỈNH SỬA TẠI ĐÂY ---
-    wrapper.className = 'flex justify-between w-full';
-       wrapper.style.paddingLeft = '30px';  // Giảm từ 55px -> 40px để dạt sang trái
-    wrapper.style.paddingRight = '40px'; // Cân bằng lề phải
-    wrapper.style.marginTop = '90px';   // Giảm từ 145px -> 120px để nhích lên
-    wrapper.style.width = '85%';         // Tăng chiều rộng để các cột ghế dạt ra đúng vị trí lòng xe
-    // ------------------------------
+        // Load passengers
+        fetch(`/Admin/Booking/GetPassengersByBooking?bookingId=${bookingId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) return console.error(data.message);
 
-    const leftCol = document.createElement('div');
-    leftCol.className = 'flex flex-col gap-y-[21px]'; // Tăng nhẹ khoảng cách dọc để khớp hàng dưới
+                            const passengers = data.passengers.map(p => ({
+                        Id: p.id,
+                        FullName: p.fullName || "Unknown",
+                        SeatNumber: p.seatNumber || null
+                    }));
 
-    const rightCol = document.createElement('div');
-    rightCol.className = 'flex flex-col gap-y-[21px]';
+                // Lấy danh sách ghế đã đặt
+                const occupiedSeats = passengers
+                    .map(p => p.SeatNumber)
+                    .filter(s => s);
 
-    // --- Render cột trái ---
-    leftRows.forEach((row) => {
-        const rowDiv = document.createElement('div');
-        rowDiv.className = 'flex gap-x-12'; // Tăng khoảng cách ngang giữa 2 ghế sát cửa sổ
+                // Render danh sách hành khách
+                passengerList.innerHTML = '';
+                passengers.forEach(p => {
+                    const name = p.FullName;
+                    const card = document.createElement('div');
+                    card.className = `
+                        flex items-center p-2 rounded-lg shadow-sm bg-white
+                        hover:shadow-md hover:bg-gray-50 cursor-pointer transition
+                    `;
 
-        renderSeat(row, 1, rowDiv);
-        renderSeat(row, 2, rowDiv);
-        leftCol.appendChild(rowDiv);
-    });
+                    const avatar = document.createElement('div');
+                    avatar.className = 'w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold mr-2 flex-shrink-0';
+                    avatar.textContent = name.charAt(0);
 
-    // --- Render cột phải ---
-    rightRows.forEach((row) => {
-        const rowDiv = document.createElement('div');
-        rowDiv.className = 'flex gap-x-12';
+                    const info = document.createElement('div');
+                    const nameEl = document.createElement('div');
+                    nameEl.className = 'text-sm font-medium text-gray-800';
+                    nameEl.textContent = name;
 
-        renderSeat(row, 1, rowDiv);
-        renderSeat(row, 2, rowDiv);
-        rightCol.appendChild(rowDiv);
-    });
+                    const seatEl = document.createElement('div');
+                    seatEl.className = 'text-xs text-gray-500 truncate';
+                    seatEl.textContent = p.SeatNumber || '-';
 
-    wrapper.appendChild(leftCol);
-    wrapper.appendChild(rightCol);
-    seatMap.appendChild(wrapper);
+                    info.appendChild(nameEl);
+                    info.appendChild(seatEl);
 
-    function renderSeat(row, col, parent) {
-        const seatCode = row + col;
-        const seatBtn = document.createElement('button');
-        seatBtn.dataset.seat = seatCode;
+                    card.appendChild(avatar);
+                    card.appendChild(info);
 
-        // Giữ nguyên kích thước w-8 h-8 nhưng bo góc tròn hơn để trông chuyên nghiệp
-        const baseClass = "w-8 h-8 rounded-lg flex flex-col items-center justify-center transition shadow-md border-0 outline-none";
+                    passengerList.appendChild(card);
+                });
 
-        if (occupiedSeats.includes(seatCode)) {
-            seatBtn.className = `${baseClass} bg-red-500 text-white cursor-not-allowed`;
-            seatBtn.disabled = true;
-        } else {
-            seatBtn.className = `${baseClass} bg-white/90 text-gray-800 hover:bg-white`;
+                // Render seat map
+                renderSeatMap(occupiedSeats);
+            })
+            .catch(err => console.error(err));
+
+        // Render seat map
+        function renderSeatMap(occupiedSeats) {
+            const leftRows = ['A', 'B', 'C', 'D', 'E'];
+            const rightRows = ['F', 'G', 'H', 'I', 'J'];
+
+            seatMap.innerHTML = '';
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'flex justify-between w-full';
+            wrapper.style.paddingLeft = '30px';
+            wrapper.style.paddingRight = '40px';
+            wrapper.style.marginTop = '90px';
+            wrapper.style.width = '85%';
+
+            const leftCol = document.createElement('div');
+            leftCol.className = 'flex flex-col gap-y-[21px]';
+            const rightCol = document.createElement('div');
+            rightCol.className = 'flex flex-col gap-y-[21px]';
+
+            leftRows.forEach(row => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'flex gap-x-12';
+                renderSeat(row, 1, rowDiv, occupiedSeats);
+                renderSeat(row, 2, rowDiv, occupiedSeats);
+                leftCol.appendChild(rowDiv);
+            });
+
+            rightRows.forEach(row => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'flex gap-x-12';
+                renderSeat(row, 1, rowDiv, occupiedSeats);
+                renderSeat(row, 2, rowDiv, occupiedSeats);
+                rightCol.appendChild(rowDiv);
+            });
+
+            wrapper.appendChild(leftCol);
+            wrapper.appendChild(rightCol);
+            seatMap.appendChild(wrapper);
         }
 
-        seatBtn.innerHTML = `
-            <span class="material-symbols-outlined text-[13px]">event_seat</span>
-            <span class="text-[8px] font-bold leading-none">${seatCode}</span>
-        `;
+        // Render 1 ghế
+        function renderSeat(row, col, parent, occupiedSeats) {
+            const seatCode = row + col;
+            const seatBtn = document.createElement('button');
+            seatBtn.dataset.seat = seatCode;
 
-        seatBtn.onclick = () => {
-            document.querySelectorAll('#seatMap button').forEach(s => {
-                if (!s.disabled) s.classList.remove('bg-blue-600', 'text-white');
-            });
-            if (!seatBtn.disabled) {
-                seatBtn.classList.add('bg-blue-600', 'text-white');
-                selectedSeat = seatCode;
+            const baseClass = "w-8 h-8 rounded-lg flex flex-col items-center justify-center transition shadow-md border-0 outline-none";
+
+            // Ghế đã đặt
+            if (occupiedSeats.includes(seatCode)) {
+                seatBtn.className = `${baseClass} bg-red-500 text-white cursor-not-allowed`;
+                seatBtn.disabled = true;
+            } else {
+                seatBtn.className = `${baseClass} bg-white/90 text-gray-800 hover:bg-white`;
             }
-        };
 
-        parent.appendChild(seatBtn);
-    }
-</script>
-<script>
-    // Fake data: username + GUID
-    const passengers = [
-        { id: '550e8400-e29b-41d4-a716-446655440000', name: 'John Doe' },
-        { id: 'd6b12c4c-3f5a-4a56-83b1-2f4f6a4d8e9f', name: 'Jane Smith' },
-        { id: '1b645389-2473-4465-9b8d-2f2a7f5a4f9c', name: 'Alice Nguyen' },
-        { id: 'e2c569be-173b-4c3c-96e6-3b6a1e5c8f8d', name: 'Bob Tran' }
-    ];
+            seatBtn.innerHTML = `
+                <span class="material-symbols-outlined text-[13px]">event_seat</span>
+                <span class="text-[8px] font-bold leading-none">${seatCode}</span>
+            `;
 
-    const passengerList = document.getElementById('passengerList');
-    passengerList.innerHTML = ''; // reset nếu cần
+            // Chọn ghế
+           
 
-    passengers.forEach(p => {
-        const card = document.createElement('div');
-        card.className = `
-            flex items-center p-2 rounded-lg shadow-sm bg-white
-            hover:shadow-md hover:bg-gray-50 cursor-pointer transition
-        `;
-
-        // Avatar chữ cái đầu
-        const avatar = document.createElement('div');
-        avatar.className = 'w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold mr-2 flex-shrink-0';
-        avatar.textContent = p.name.charAt(0);
-
-        // Info
-        const info = document.createElement('div');
-        const nameEl = document.createElement('div');
-        nameEl.className = 'text-sm font-medium text-gray-800';
-        nameEl.textContent = p.name;
-
-        const idEl = document.createElement('div');
-        idEl.className = 'text-xs text-gray-500 truncate';
-        idEl.textContent = p.id;
-
-        info.appendChild(nameEl);
-        info.appendChild(idEl);
-
-        card.appendChild(avatar);
-        card.appendChild(info);
-
-        passengerList.appendChild(card);
+            parent.appendChild(seatBtn);
+        }
     });
 </script>

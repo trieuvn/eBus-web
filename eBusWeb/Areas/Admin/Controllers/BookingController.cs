@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Supabase;
 using Supabase.Postgrest;
+using Supabase.Postgrest.Exceptions;
 using static Supabase.Postgrest.Constants;
 
 namespace eBusWeb.Areas.Admin.Controllers
@@ -344,11 +345,124 @@ namespace eBusWeb.Areas.Admin.Controllers
                 return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
             }
         }
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            var routesRes = await _supabase
+                .From<Models.Route>()
+                .Get();
+
+            ViewBag.Routes = routesRes.Models;
             return View();
         }
+        [HttpGet]
+        public async Task<IActionResult> GetStopsByRoute(int routeId)
+        {
+            try
+            {
+                if (routeId <= 0)
+                {
+                    return BadRequest(new { success = false, message = "Route ID không hợp lệ" });
+                }
 
+                // Lấy danh sách điểm dừng theo routeId
+                var stopsResponse = await _supabase
+                    .From<RouteStop>()
+                    .Where(x => x.RouteId == routeId)
+                    .Get();
+
+                var stops = stopsResponse.Models ?? new List<RouteStop>();
+
+                if (stops.Count == 0)
+                {
+                    // Kiểm tra route tồn tại (an toàn, không dùng .Single() để tránh exception)
+                    var routeResponse = await _supabase
+                        .From<Models.Route>()
+                        .Where(r => r.Id == routeId)
+                        .Get();
+
+                    var route = routeResponse.Model; // null nếu không tìm thấy hoặc có lỗi mapping
+
+                    if (route == null)
+                    {
+                        return NotFound(new { success = false, message = $"Không tìm thấy tuyến đường ID {routeId}" });
+                    }
+
+                    return Ok(new
+                    {
+                        success = false,
+                        message = $"Tuyến {routeId} tồn tại nhưng chưa có điểm dừng nào trong bảng Routes_stop"
+                    });
+                }
+
+                // Sắp xếp theo stop_order
+                var orderedStops = stops
+                    .OrderBy(s => s.StopOrder)
+                    .ToList();
+                return Ok(new { success = true, stops = orderedStops });
+            }
+            catch (PostgrestException pgEx)
+            {
+                // Lỗi phổ biến nhất: mapping model thất bại (tên bảng/cột sai, RLS...)
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Lỗi Supabase (PostgrestException): " + pgEx.Message,
+                    details = pgEx.Reason.ToString() ?? "Không có chi tiết",
+                    content = pgEx.Content ?? "No content",
+                    hint = "Kiểm tra: tên bảng Routes_stop có đúng? cột route_id, location_name, stop_order có khớp model?"
+                });
+            }
+            catch (Exception ex)
+            {
+                // Lỗi chung (kết nối, timeout, JSON parse...)
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Lỗi server: " + ex.Message,
+                    innerException = ex.InnerException?.Message ?? "Không có chi tiết",
+                    stackTrace = ex.StackTrace?.Substring(0, Math.Min(500, ex.StackTrace?.Length ?? 0)) ?? "No stack"
+                });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] BookingCreateVM model)
+        {
+            try
+            {
+                if (model?.Booking == null)
+                    return Json(new { success = false, message = "INVALID_DATA" });
+
+                var bookingRes = await _supabase
+                    .From<Booking>()
+                    .Insert(model.Booking);
+
+                var booking = bookingRes.Models.FirstOrDefault();
+                if (booking == null)
+                    return Json(new { success = false, message = "CREATE_FAILED" });
+
+                if (model.Passengers?.Any() == true)
+                {
+                    foreach (var p in model.Passengers)
+                        p.BookingId = booking.Id;
+
+                    await _supabase
+                        .From<BookingPassenger>()
+                        .Insert(model.Passengers);
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    message = "BOOKING_CREATED",
+                    redirectUrl = "/Admin/Booking"
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
 
     }
 }

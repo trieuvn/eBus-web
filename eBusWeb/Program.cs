@@ -4,7 +4,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // MVC
 builder.Services.AddControllersWithViews();
-
+builder.Services.AddControllersWithViews()
+    .AddJsonOptions(options =>
+    {
+        // Giữ nguyên tên thuộc tính như trong Model C#
+        options.JsonSerializerOptions.PropertyNamingPolicy = null;
+    });
 // ✅ THÊM SESSION (BẮT BUỘC)
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>

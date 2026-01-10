@@ -239,7 +239,6 @@ namespace eBusWeb.Areas.Admin.Controllers
         }
 
         [HttpPost]
-        [HttpPost]
         public async Task<JsonResult> Delete([FromBody] RouteDeleteDto dto)
         {
             try

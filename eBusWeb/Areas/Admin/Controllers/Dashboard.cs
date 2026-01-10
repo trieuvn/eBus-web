@@ -48,7 +48,7 @@ namespace eBusWeb.Areas.Admin.Controllers
                         .FirstOrDefault(p => p.BookingId == b.Id)?.FullName
                         ?? b.ContactName,
                     PassengerAvatar = GetAvatar(b.ContactName),
-                    Route = "N/A", // nếu chưa có Trip → Route
+                    Route = routes.FirstOrDefault(r => r.Id == b.PickupStopId)?.Name ?? "N/A",
                     Status = MapStatus(b.BookingStatus),
                     Amount = (decimal)b.TotalAmount
                 })
@@ -56,13 +56,15 @@ namespace eBusWeb.Areas.Admin.Controllers
 
             // ===== Route Popularity =====
             var routePopularity = routes
-                .Select(r => new RoutePopularityVM
-                {
-                    RouteName = r.Name,
-                    BookingCount = bookings.Count // tạm thời
-                })
-                .Take(5)
-                .ToList();
+    .Select(r => new RoutePopularityVM
+    {
+        RouteName = r.Name,
+        BookingCount = bookings.Count(b => b.PickupStopId == r.Id) // đếm booking cho route
+    })
+    .OrderByDescending(rp => rp.BookingCount) // nếu muốn top phổ biến nhất
+    .Take(5)
+    .ToList();
+
 
             var model = new DashboardVM
             {

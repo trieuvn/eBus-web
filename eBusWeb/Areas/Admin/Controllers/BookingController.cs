@@ -344,7 +344,10 @@ namespace eBusWeb.Areas.Admin.Controllers
                 return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
             }
         }
-
+        public IActionResult Create()
+        {
+            return View();
+        }
 
 
     }

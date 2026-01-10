@@ -1,0 +1,259 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create Booking - Bus Admin</title>
+
+    <!-- Google Fonts & Material Symbols -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                primary: "#1e40af", // blue
+                "background-light": "#f8f9fa",
+                "background-dark": "#0f172a",
+                "text-light": "#f1f5f9",
+                "text-dark": "#1e293b"
+              },
+              borderRadius: { DEFAULT: "0.5rem", lg: "0.75rem", full: "9999px" },
+              boxShadow: { sm: "0 1px 2px rgba(0,0,0,0.05)", md: "0 4px 6px rgba(0,0,0,0.1)" }
+            },
+          },
+          corePlugins: { preflight: false }
+        };
+    </script>
+
+    <style>
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #94a3b8;
+            }
+
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+
+        /* Button, input, select reset */
+        input, select, textarea, button {
+            border: none;
+            outline: none;
+            background: transparent;
+            transition: all 0.2s;
+        }
+
+            input:focus, select:focus, textarea:focus {
+                box-shadow: 0 0 0 3px rgba(30,64,175,0.3); /* subtle blue glow */
+                border-radius: 0.5rem;
+            }
+
+        button {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-text-dark dark:text-text-light font-display transition-colors duration-200">
+    <div class="flex flex-col min-h-screen">
+
+        <main class="flex-1 p-4 md:p-8 lg:px-40 lg:py-10 overflow-y-auto">
+            <div class="mx-auto max-w-6xl space-y-8">
+
+                <!-- Breadcrumbs -->
+                <nav class="flex items-center text-sm font-medium text-gray-500 dark:text-gray-400">
+                    <a class="hover:text-primary transition-colors" style="text-decoration:none;"href="/">Home</a>
+                    <span class="mx-2">/</span>
+                    <a class="hover:text-primary transition-colors" style="text-decoration:none;"href="/Admin/Booking">Bookings</a>
+                    <span class="mx-2">/</span>
+                    <span class="font-semibold text-text-dark dark:text-text-light">Create New</span>
+                </nav>
+
+                <!-- Page Heading -->
+                <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
+                    <div>
+                        <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-text-dark dark:text-text-light">Create New Booking</h1>
+                        <p class="mt-2 text-base text-gray-500 dark:text-gray-400">
+                            Fill in the details below to generate a new bus ticket reservation.
+                        </p>
+                    </div>
+                    <div class="flex gap-3 mt-4 md:mt-0">
+                        <button class="px-4 py-2 rounded-full bg-white text-primary shadow-sm hover:bg-primary/10 transition-all">
+                            Cancel
+                        </button>
+                        <button class="px-4 py-2 rounded-full bg-primary text-white shadow-sm hover:bg-primary/80 transition-all">
+                            Confirm Booking
+                        </button>
+                    </div>
+                </div>
+
+                <form class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                    <!-- Left Column -->
+                    <div class="space-y-8 lg:col-span-2">
+
+                        <!-- Trip Info -->
+                        <div class="rounded-xl bg-white dark:bg-gray-900 shadow-md">
+                            <div class="px-6 py-4 flex items-center gap-2 border-b border-gray-100 dark:border-gray-800">
+                                <span class="material-symbols-outlined text-primary">map</span>
+                                <h3 class="text-lg font-bold text-text-dark dark:text-text-light">Trip Information</h3>
+                            </div>
+                            <div class="p-6 grid md:grid-cols-2 gap-6">
+                                <!-- Customer -->
+                                <label class="flex flex-col gap-2">
+                                    <span class="text-sm font-medium">Customer (User ID)</span>
+                                    <div class="relative">
+                                        <span class="material-symbols-outlined absolute left-3 top-3 text-gray-400 text-[20px]">person_search</span>
+                                        <input type="text" placeholder="Search by name or ID..." class="w-full pl-10 rounded-lg bg-white dark:bg-gray-800 text-sm shadow-sm focus:shadow-md" />
+                                    </div>
+                                </label>
+                                <!-- Trip -->
+                                <label class="flex flex-col gap-2">
+                                    <span class="text-sm font-medium">Select Trip (Route & Date)</span>
+                                    <div class="relative">
+                                        <span class="material-symbols-outlined absolute left-3 top-3 text-gray-400 text-[20px]">route</span>
+                                        <input type="text" placeholder="Search route number..." class="w-full pl-10 rounded-lg bg-white dark:bg-gray-800 text-sm shadow-sm focus:shadow-md" />
+                                    </div>
+                                </label>
+                                <!-- Pickup -->
+                                <label class="flex flex-col gap-2">
+                                    <span class="text-sm font-medium">Pickup Stop</span>
+                                    <select class="w-full rounded-lg bg-white dark:bg-gray-800 text-sm shadow-sm focus:shadow-md">
+                                        <option disabled selected value="">Select pickup point</option>
+                                        <option>Central Station</option>
+                                        <option>North Gate</option>
+                                        <option>Airport Terminal 1</option>
+                                    </select>
+                                </label>
+                                <!-- Dropoff -->
+                                <label class="flex flex-col gap-2">
+                                    <span class="text-sm font-medium">Dropoff Stop</span>
+                                    <select class="w-full rounded-lg bg-white dark:bg-gray-800 text-sm shadow-sm focus:shadow-md">
+                                        <option disabled selected value="">Select dropoff point</option>
+                                        <option>Downtown Plaza</option>
+                                        <option>Westside Mall</option>
+                                        <option>University Campus</option>
+                                    </select>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Passenger Details -->
+                        <div class="rounded-xl bg-white dark:bg-gray-900 shadow-md">
+                            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+                                <h3 class="text-lg font-bold flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-primary">groups</span> Passenger Details
+                                </h3>
+                                <button type="button" class="flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/20 transition-all">
+                                    <span class="material-symbols-outlined text-[16px]">add</span> Add Passenger
+                                </button>
+                            </div>
+                            <div class="overflow-x-auto p-0">
+                                <table class="w-full text-left text-sm">
+                                    <thead class="bg-gray-50 dark:bg-gray-800/50 text-xs uppercase text-gray-500 dark:text-gray-400">
+                                        <tr>
+                                            <th class="px-6 py-3 font-medium">Passenger Name</th>
+                                            <th class="px-6 py-3 font-medium">Age</th>
+                                            <th class="px-6 py-3 font-medium">Gender</th>
+                                            <th class="px-6 py-3 font-medium">Seat No.</th>
+                                            <th class="px-6 py-3 font-medium text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                                        <tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                            <td class="px-6 py-3"><input type="text" value="Jane Doe" placeholder="Full Name" class="w-full rounded-lg bg-white dark:bg-gray-800 text-sm shadow-sm focus:shadow-md" /></td>
+                                            <td class="px-6 py-3"><input type="number" value="28" placeholder="Age" class="w-16 rounded-lg bg-white dark:bg-gray-800 text-sm shadow-sm focus:shadow-md" /></td>
+                                            <td class="px-6 py-3">
+                                                <select class="rounded-lg bg-white dark:bg-gray-800 text-sm shadow-sm focus:shadow-md">
+                                                    <option>Female</option>
+                                                    <option>Male</option>
+                                                    <option>Other</option>
+                                                </select>
+                                            </td>
+                                            <td class="px-6 py-3 flex items-center gap-2">
+                                                <span class="material-symbols-outlined text-gray-400 text-[18px]">event_seat</span>
+                                                <input type="text" value="12A" class="w-12 font-semibold text-primary rounded-lg bg-white dark:bg-gray-800 text-sm shadow-sm focus:shadow-md" />
+                                            </td>
+                                            <td class="px-6 py-3 text-right">
+                                                <button type="button" class="text-gray-400 hover:text-red-500 transition-all">
+                                                    <span class="material-symbols-outlined text-[20px]">delete</span>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="px-6 py-3 text-xs text-gray-500 dark:text-gray-400">
+                                <span class="font-semibold text-primary">*</span> Ensure all passenger details match ID.
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="space-y-8 lg:col-span-1">
+                        <div class="sticky top-24 rounded-xl bg-white dark:bg-gray-900 shadow-md p-6 space-y-6">
+                            <h3 class="text-lg font-bold flex items-center gap-2">
+                                <span class="material-symbols-outlined text-primary">receipt_long</span> Booking Summary
+                            </h3>
+                            <input type="text" value="Jane Doe" class="w-full rounded-lg bg-white dark:bg-gray-800 text-sm p-2 shadow-sm focus:shadow-md" placeholder="Contact Name" />
+
+                            <div class="space-y-2">
+                                <span class="text-sm font-medium">Booking Status</span>
+                                <div class="flex flex-col gap-2">
+                                    <label class="flex items-center gap-3 p-3 rounded-lg hover:bg-primary/10 cursor-pointer">
+                                        <input type="radio" name="status" checked />
+                                        <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-green-500"></span>Confirmed</span>
+                                    </label>
+                                    <label class="flex items-center gap-3 p-3 rounded-lg hover:bg-primary/10 cursor-pointer">
+                                        <input type="radio" name="status" />
+                                        <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-yellow-500"></span>Pending</span>
+                                    </label>
+                                    <label class="flex items-center gap-3 p-3 rounded-lg hover:bg-primary/10 cursor-pointer">
+                                        <input type="radio" name="status" />
+                                        <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-gray-400"></span>Draft</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-between items-center pt-4 border-t border-gray-100 dark:border-gray-700">
+                                <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Amount</span>
+                                <div class="flex items-center gap-1">
+                                    <input type="text" value="145,000"
+                                           class="w-40 text-right text-2xl font-black text-text-dark dark:text-text-light rounded-lg bg-white dark:bg-gray-800 shadow-sm focus:shadow-md px-3 py-2" />
+                                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400">VND</span>
+                                </div>
+                            </div>
+
+                            <button class="w-full rounded-full bg-primary py-3 text-white font-bold hover:bg-primary/80 transition-all">Confirm Booking</button>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

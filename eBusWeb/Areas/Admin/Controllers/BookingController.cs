@@ -440,12 +440,13 @@ namespace eBusWeb.Areas.Admin.Controllers
         {
             var query = _supabase
                 .From<User>()
-                .Select("id, full_name");
+                .Select("id, full_name, email");
 
             if (!string.IsNullOrWhiteSpace(q))
             {
-                // ilike = search không phân biệt hoa thường
-                query = query.Filter("full_name", Supabase.Postgrest.Constants.Operator.ILike, $"%{q}%");
+                // Search by full_name OR email using or filter
+                query = query.Filter("or", Supabase.Postgrest.Constants.Operator.And, 
+                    $"(full_name.ilike.%{q}%,email.ilike.%{q}%)");
             }
 
             var response = await query.Get();
@@ -454,10 +455,12 @@ namespace eBusWeb.Areas.Admin.Controllers
 
             return Json(users.Select(u => new
             {
-                id = u.Id,             // GUID
-                text = u.FullName      // hiển thị cho Select2
+                id = u.Id,
+                // Display FullName if available, otherwise display Email
+                text = !string.IsNullOrEmpty(u.FullName) ? u.FullName : u.Email ?? "Unknown User"
             }));
         }
+
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] BookingCreateVM model)

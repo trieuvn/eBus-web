@@ -144,7 +144,9 @@
                             </label>
                             <label class="block">
                                 <span class="text-sm font-medium mb-1.5 block">Tên liên hệ</span>
-                                <input type="text" id="contactName" class="w-full p-3 rounded-lg border dark:bg-gray-800 dark:border-gray-600" placeholder="Họ và tên" required />
+                                <select id="contactName" class="form-select" style="width:100%">
+                                    <option value="">Chọn người liên hệ</option>
+                                </select>
                             </label>
                         </div>
                     </section>
@@ -300,13 +302,17 @@
                 if (!data.success) throw new Error(data.message || 'Không tải được danh sách điểm dừng');
 
                 const stops = data.stops || [];
-                if (stops.length === 0) throw new Error('Tuyến này chưa có điểm dừng nào');
-
-                const options = stops.map(s => {
-                    const id = s.id ?? s.Id ?? s["id"] ?? '';
-                    const name = s.location_name ?? s.LocationName ?? s["location_name"] ?? s.name ?? `Điểm ${id}`;
-                    return `<option value="${id}">${name}</option>`;
-                }).join('');
+                        if (stops.length === 0) {
+            pickupSelect.innerHTML = '<option value="">Tuyến này chưa có điểm đón</option>';
+            dropoffSelect.innerHTML = '<option value="">Tuyến này chưa có điểm trả</option>';
+            pickupSelect.disabled = true;
+            dropoffSelect.disabled = true;
+            showToast('Tuyến này chưa cấu hình điểm dừng', 'error');
+            return;
+        }
+            const options = stops.map(s =>
+            `<option value="${s.id}">${s.name}</option>`
+        ).join('');
 
                 pickupSelect.innerHTML = `<option value="">Chọn điểm đón</option>${options}`;
                 dropoffSelect.innerHTML = `<option value="">Chọn điểm trả</option>${options}`;
@@ -337,8 +343,14 @@
                 if (!pickupSelect.value || !dropoffSelect.value) throw new Error('Vui lòng chọn điểm đón và trả');
                 if (pickupSelect.value === dropoffSelect.value) throw new Error('Điểm đón và trả không được trùng nhau');
 
-                const contactName = document.getElementById('contactName').value.trim();
-                if (!contactName) throw new Error('Vui lòng nhập tên liên hệ');
+                        const contactData = $('#contactName').select2('data');
+
+        if (!contactData || contactData.length === 0) {
+            throw new Error('Vui lòng chọn người liên hệ');
+        }
+
+        const contactName = contactData[0].text; // tên hiển thị
+
 
                 const passengers = [];
                 passengerBody.querySelectorAll('tr').forEach(row => {
@@ -384,6 +396,33 @@
                 confirmBtn.textContent = 'Xác nhận Booking';
             }
         });
+        $(document).ready(function () {
+            $('#contactName').select2({
+                placeholder: 'Chọn người liên hệ',
+                allowClear: true,
+                width: '100%',
+                minimumInputLength: 1, // gõ ít nhất 1 ký tự
+                ajax: {
+                    url: '/Admin/Booking/GetForSelect2',
+                    dataType: 'json',
+                    delay: 300,
+                    data: function (params) {
+                        return {
+                            q: params.term // từ khóa search
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data // [{id, text}]
+                        };
+                    },
+                    cache: true
+                }
+            });
+        });
+
     </script>
+    <script src="~/dist/js/select2.js"></script>
+
 </body>
 </html>

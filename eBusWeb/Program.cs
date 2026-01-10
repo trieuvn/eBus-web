@@ -1,7 +1,8 @@
-﻿using Supabase;
+﻿using QuestPDF.Infrastructure;
+using Supabase;
 
 var builder = WebApplication.CreateBuilder(args);
-
+QuestPDF.Settings.License = LicenseType.Community;
 // MVC
 builder.Services.AddControllersWithViews();
 builder.Services.AddControllersWithViews()

@@ -389,8 +389,9 @@ namespace eBusWeb.Areas.Admin.Controllers
 
                     return Ok(new
                     {
-                        success = false,
-                        message = $"Tuyến {routeId} tồn tại nhưng chưa có điểm dừng nào trong bảng Routes_stop"
+                        success = true,
+                        stops = new List<RouteStop>(),
+                        message = "Tuyến này chưa có điểm dừng"
                     });
                 }
 
@@ -398,7 +399,17 @@ namespace eBusWeb.Areas.Admin.Controllers
                 var orderedStops = stops
                     .OrderBy(s => s.StopOrder)
                     .ToList();
-                return Ok(new { success = true, stops = orderedStops });
+                return Ok(new
+                {
+                    success = true,
+                    stops = orderedStops.Select(s => new
+                    {
+                        id = s.Id,
+                        name = s.LocationName,
+                        stopType = s.StopType,
+                        order = s.StopOrder
+                    })
+                });
             }
             catch (PostgrestException pgEx)
             {
@@ -423,6 +434,29 @@ namespace eBusWeb.Areas.Admin.Controllers
                     stackTrace = ex.StackTrace?.Substring(0, Math.Min(500, ex.StackTrace?.Length ?? 0)) ?? "No stack"
                 });
             }
+        }
+        [HttpGet]
+        public async Task<IActionResult> GetForSelect2(string q)
+        {
+            var query = _supabase
+                .From<User>()
+                .Select("id, full_name");
+
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                // ilike = search không phân biệt hoa thường
+                query = query.Filter("full_name", Supabase.Postgrest.Constants.Operator.ILike, $"%{q}%");
+            }
+
+            var response = await query.Get();
+
+            var users = response.Models ?? new List<User>();
+
+            return Json(users.Select(u => new
+            {
+                id = u.Id,             // GUID
+                text = u.FullName      // hiển thị cho Select2
+            }));
         }
 
         [HttpPost]

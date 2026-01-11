@@ -1,0 +1,558 @@
+﻿@model eBusWeb.Areas.Admin.Controllers.BookingEditVM;
+@{
+    var totalMinutes = Model.Route?.EstDuration ?? 0;
+    var hours = totalMinutes / 60;
+    var minutes = totalMinutes % 60;
+}
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit Booking - Bus Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1e90ff",
+                        "primary-hover": "#1c86ee",
+                        "background-light": "#f0f8ff",
+                        "background-dark": "#0b1a2b",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#162b45",
+                        "border-light": "#d0e4ff",
+                        "border-dark": "#1c3b5a",
+                        "text-main": "#0b1a2b",
+                        "text-muted": "#5a7d99",
+                    },
+                    fontFamily: { "display": ["Inter", "sans-serif"] },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                }
+            },
+            corePlugins: { preflight: false } // tắt reset mặc định
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #a3c2ff;
+            border-radius: 3px;
+        }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #7faaff;
+            }
+
+        .dark ::-webkit-scrollbar-thumb {
+            background: #3a6ea5;
+        }
+
+        /* Input luôn trắng */
+        input {
+            background-color: #ffffff !important;
+            color: #0b1a2b;
+        }
+
+        /* Nút + không outline */
+        button:focus {
+            outline: none;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-text-main dark:text-white flex flex-col min-h-screen">
+    <div id="pageMessage"
+         class="hidden mb-4 rounded-lg px-4 py-3 text-sm font-medium">
+    </div>
+    <form id="editBookingForm"
+          method="post"
+          action="/Admin/Booking/Edit">
+    <main class="flex-1 w-full max-w-[1000px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+            <input type="hidden"
+                   name="Booking.Id"
+                   value="@((long)Model.Booking.Id)" />
+            <input type="hidden"
+                   name="Payment.Id"
+                   value="@Model.Payment?.Id" />
+                   <input type="hidden" name="Booking.TripId" value="@Model.Booking.TripId" />
+<input type="hidden" name="Booking.UserId" value="@Model.Booking.UserId" />
+            <input type="hidden" name="Payment.BookingId" value="@Model.Booking.Id" />
+        <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <h1 class="text-2xl md:text-3xl font-bold text-text-main dark:text-white">Edit Booking #@Model.Booking.Id</h1>
+                    <span class="inline-flex items-center rounded-full bg-teal-100 dark:bg-teal-900/30 px-2 py-0.5 text-xs font-medium text-teal-800 dark:text-teal-300">Confirmed</span>
+                </div>
+                <p class="text-text-muted dark:text-gray-400 text-sm">Modify logistics, passenger details, and payment status.</p>
+            </div>
+            <div class="flex gap-2">
+                    <button type="button" onclick="window.location.href='/Admin/Booking'" class="flex items-center justify-center rounded-lg h-9 px-3 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark text-text-main dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 text-sm font-medium transition-colors">
+                    <span class="material-symbols-outlined text-base mr-1">arrow_back</span> Back
+                </button>
+                
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Left Column -->
+            <div class="lg:col-span-2 space-y-6">
+
+                <!-- Trip Details -->
+                <!-- Trip Details -->
+                <section class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark overflow-hidden">
+                    <div class="px-4 py-3 border-b border-border-light dark:border-border-dark flex items-center justify-between">
+                        <h3 class="text-md font-semibold text-text-main dark:text-white flex items-center gap-1">
+                            <span class="material-symbols-outlined text-primary">alt_route</span> Trip Details
+                        </h3>
+                    </div>
+                    <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-text-main dark:text-gray-300 mb-1">Selected Trip Route</label>
+                            <select class="w-full rounded-lg border border-border-light dark:border-border-dark bg-white text-black p-2 pr-8 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                                <option selected>
+                                    Trip #@Model.Trip.Id | @Model.Trip.DepartureTime.ToString("HH:mm")
+                                </option>
+
+                            </select>
+                            <p class="mt-1 text-xs text-orange-600 dark:text-orange-400 flex items-center gap-1">
+                                <span class="material-symbols-outlined text-xs">warning</span> Changing the trip will reset seat assignments.
+                            </p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-text-main dark:text-gray-300 mb-1">Pickup Stop</label>
+                            <select name="Booking.PickupStopId" class="w-full rounded-lg border border-border-light dark:border-border-dark bg-white text-black p-2 text-sm">
+                                @foreach (var stop in Model.AvailablePickupStops)
+                                {
+                                    <option value="@stop.Id"
+                                            selected="@(stop.Id == Model.Booking.PickupStopId)">
+                                        @stop.LocationName
+                                    </option>
+                                }
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-text-main dark:text-gray-300 mb-1">Dropoff Stop</label>
+                            <select name ="Booking.DropoffStopId" class="w-full rounded-lg border border-border-light dark:border-border-dark bg-white text-black p-2 text-sm">
+                                @foreach (var stop in Model.AvailableDropoffStops)
+                                {
+                                    <option value="@stop.Id"
+                                            selected="@(stop.Id == Model.Booking.DropoffStopId)">
+                                        @stop.LocationName
+                                    </option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <div class="flex items-center gap-3 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-900/50 text-sm">
+                                <span class="material-symbols-outlined text-blue-600 dark:text-blue-400">calendar_month</span>
+                                <div class="flex flex-col">
+                                    <span class="uppercase tracking-wide text-xs text-blue-600 dark:text-blue-400">Travel Date</span>
+                                    <span class="font-medium text-blue-900 dark:text-blue-100">@Model.Trip.DepartureTime.ToString("dd MMM yyyy")</span>
+                                </div>
+                                <div class="w-px h-6 bg-blue-200 dark:bg-blue-800 mx-2"></div>
+                                <div class="flex flex-col">
+                                    <span class="uppercase tracking-wide text-xs text-blue-600 dark:text-blue-400">Est. Duration</span>
+                                    <span class="font-medium text-blue-900 dark:text-blue-100">@(hours > 0 ? $"{hours}h " : "")@($"{minutes}m")</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+
+                <!-- Customer Info -->
+                <section class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark overflow-hidden">
+                    <div class="px-4 py-3 border-b border-border-light dark:border-border-dark flex items-center justify-between">
+                        <h3 class="text-md font-semibold text-text-main dark:text-white flex items-center gap-1">
+                            <span class="material-symbols-outlined text-primary">person</span> Customer Information
+                        </h3>
+                    </div>
+                    <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div class="md:col-span-2">
+                            <label class="mb-1 block">Registered User Account</label>
+                                <input readonly class="w-full rounded-lg border border-border-light dark:border-border-dark bg-white text-black p-2" value="@Model.Booking.ContactName (ID: #@Model.Booking.Id)">
+                        </div>
+                        <div>
+                            <label class="mb-1 block">Contact Name</label>
+                                <input name="Booking.ContactName" class="w-full rounded-lg border border-border-light dark:border-border-dark bg-white text-black p-2" value="@Model.Booking.ContactName">
+                        </div>
+                        <div>
+                            <label class="mb-1 block">Contact Email</label>
+                                <input name="Booking.ContactEmail" class="w-full rounded-lg border border-border-light dark:border-border-dark bg-white text-black p-2" value="@Model.Booking.ContactEmail">
+                        </div>
+                    </div>
+                </section>
+
+
+            </div>
+
+            <!-- Right Column -->
+            <div class="space-y-6">
+
+                <!-- Financials -->
+                <section class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark overflow-hidden">
+                    <div class="px-4 py-3 border-b border-border-light dark:border-border-dark">
+                        <h3 class="text-md font-semibold text-text-main dark:text-white flex items-center gap-1">
+                            <span class="material-symbols-outlined text-primary">payments</span> Financials
+                        </h3>
+                    </div>
+
+                    <div class="p-4 space-y-4 text-sm">
+                            <div>
+                                <label class="mb-1 block">Total Booking</label>
+                                <input name="Booking.TotalAmount"
+                                       type="number"
+                                       value="@(Model.Booking?.TotalAmount ?? 0)"
+                                       class="w-full rounded-lg border border-border-light p-2 font-semibold text-base">
+
+                            </div>
+                        <div>
+                            <label class="mb-1 block">Total Amount</label>
+                                <input name="Payment.Amount"
+                                       type="number"
+                                       value="@(Model.Payment?.Amount ?? 0)"
+                                       class="w-full rounded-lg border border-border-light p-2 font-semibold text-base">
+
+                        </div>
+                        <div>
+                            <label class="mb-1 block">Payment Status</label>
+                            <select name="Payment.PaymentStatus" class="w-full rounded-lg border border-teal-200 dark:border-teal-900 dark:bg-teal-900/10 p-2 text-sm font-medium text-teal-700 dark:text-teal-300">
+                                <option value="0" selected="@(Model.Payment?.PaymentStatus == 0)">Pending</option>
+                                <option value="1" selected="@(Model.Payment?.PaymentStatus == 1)">Paid</option>
+                                <option value="2" selected="@(Model.Payment?.PaymentStatus == 2)">Refunded</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="mb-1 block">Booking Status</label>
+                            <select name="Booking.BookingStatus" class="w-full rounded-lg border border-border-light dark:border-border-dark p-2 text-sm">
+                                <option value="1" selected="@(Model.Booking.BookingStatus == 1)">Confirmed</option>
+                                <option value="0" selected="@(Model.Booking.BookingStatus == 0)">Pending</option>
+                                <option value="2" selected="@(Model.Booking.BookingStatus == 2)">Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Passengers -->
+                <section class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark overflow-hidden">
+                    <div class="px-4 py-3 border-b border-border-light dark:border-border-dark flex items-center justify-between text-sm">
+                        <h3 class="font-semibold text-text-main dark:text-white flex items-center gap-1">
+                            <span class="material-symbols-outlined text-primary">groups</span> Passengers
+                        </h3>
+                            <button id="btnAddPassenger"
+                                    type="button"
+                                    class="text-primary hover:bg-primary/10 rounded-full p-1 transition-colors focus:outline-none focus:ring-0 border-0">
+                                <span class="material-symbols-outlined">groups</span>
+                            </button>
+                    </div>
+                    <div class="divide-y divide-border-light dark:divide-border-dark text-sm">
+                        <!-- Passenger 1 -->
+                        @for (int i = 0; i < Model.Passengers.Count; i++)
+                        {
+
+                            <div class="p-3 flex gap-2 items-start">
+                                    <input type="hidden" name="Passengers[@i].Id" value="@Model.Passengers[i].Id" />
+                                    <div class="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs mt-1">@(i + 1)</div>
+                                <div class="flex-1 space-y-1">
+                                    <div class="grid grid-cols-3 gap-2">
+                                        <div class="col-span-2">
+                                            <label class="block text-[10px] uppercase text-text-muted mb-0.5">Full Name</label>
+                                            <input name="Passengers[@i].FullName" class="w-full text-xs rounded border border-border-light dark:border-border-dark px-1 py-1" value="@Model.Passengers[i].FullName">
+                                        </div>
+                                        <div class="col-span-1">
+                                            <label class="block text-[10px] uppercase text-text-muted mb-0.5">Seat</label>
+                                            <input name="Passengers[@i].SeatNumber" class="w-full text-xs rounded border border-border-light dark:border-border-dark px-1 py-1 text-center font-mono" value="@Model.Passengers[i].SeatNumber">
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </section>
+
+            </div>
+        </div>
+            <div class="flex justify-end mt-6">
+                <button type="button"
+                        onclick="saveBooking()"
+                        class="h-11 px-8 min-w-[160px]
+                   rounded-xl
+                   bg-primary hover:bg-primary-hover
+                   text-white font-semibold
+                   shadow-md hover:shadow-lg
+                   transition-all duration-200
+                   flex items-center justify-center gap-2
+                   border-0
+                   focus:outline-none focus:ring-0
+                   active:scale-[0.98]">
+                    <span class="material-symbols-outlined text-base">save</span>
+                    Save Changes
+                </button>
+            </div>
+
+
+        
+    </main>
+    </form>
+
+</body>
+</html>
+<!-- Modal -->
+<div id="addPassengerModal" class="fixed inset-0 z-50 hidden bg-black/40 flex items-center justify-center">
+    <div class="bg-white rounded-xl w-[760px] p-4 relative flex flex-col">
+
+        <!-- Close button -->
+        <button id="closeModal" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700
+                                    focus:outline-none border-none bg-transparent text-xl">
+            &times;
+        </button>
+
+        <div class="flex-1 flex">
+            <!-- Left: Passenger List -->
+            <div class="w-[250px] border-r pr-4">
+                <h3 class="text-lg font-semibold mb-3">Passengers</h3>
+                <div id="passengerList" class="space-y-2 max-h-[380px] overflow-y-auto">
+                    <!-- Passenger items sẽ được render bằng JS -->
+                </div>
+            </div>
+
+            <!-- Right: Seat map -->
+            <div class="flex-1 flex justify-center items-start">
+                <div class="border rounded-lg p-2 flex justify-center">
+                    <div class="relative w-[420px] h-[420px]">
+
+                        <!-- Background image -->
+                        <img src="~/Seat2.png"
+                             class="absolute inset-0 w-[420px] h-full object-contain opacity-90 pointer-events-none select-none"
+                             alt="Bus layout" />
+
+                        <!-- Seats layer -->
+                        <div id="seatMap" class="absolute inset-0 flex justify-center gap-x-6 items-start px-2 py-2">
+                            <!-- Ghế sẽ được render bằng JS -->
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function saveBooking() {
+        const form = document.getElementById("editBookingForm");
+        const msgBox = document.getElementById("pageMessage");
+
+        const formData = new FormData(form);
+
+        fetch(form.action, {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        })
+        .then(res => res.json())
+        .then(res => {
+            msgBox.classList.remove("hidden");
+
+            if (res.success) {
+                msgBox.className =
+                    "mb-4 rounded-lg px-4 py-3 text-sm font-medium bg-green-50 text-green-700 border border-green-200";
+
+                msgBox.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-base">check_circle</span>
+                        Booking updated successfully
+                    </div>`;
+                setTimeout(() => {
+        window.location.href = "/Admin/Booking";
+    }, 1500);
+            } else {
+                msgBox.className =
+                    "mb-4 rounded-lg px-4 py-3 text-sm font-medium bg-red-50 text-red-700 border border-red-200";
+
+                msgBox.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-base">error</span>
+                        ${res.message ?? "Update failed"}
+                    </div>`;
+            }
+        })
+        .catch(() => {
+            msgBox.classList.remove("hidden");
+            msgBox.className =
+                "mb-4 rounded-lg px-4 py-3 text-sm font-medium bg-red-50 text-red-700 border border-red-200";
+
+            msgBox.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-base">error</span>
+                    Server error. Please try again.
+                </div>`;
+        });
+    }
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Modal buttons
+        const btnAddPassenger = document.getElementById('btnAddPassenger');
+        const addPassengerModal = document.getElementById('addPassengerModal');
+        const closeModal = document.getElementById('closeModal');
+
+        // Seat map & passenger list
+        const seatMap = document.getElementById('seatMap');
+        const passengerList = document.getElementById('passengerList');
+
+        const bookingId = document.querySelector('input[name="Booking.Id"]').value;
+        let selectedSeat = null;
+
+        btnAddPassenger.onclick = () => addPassengerModal.classList.remove('hidden');
+        closeModal.onclick = () => addPassengerModal.classList.add('hidden');
+
+        // Load passengers
+        fetch(`/Admin/Booking/GetPassengersByBooking?bookingId=${bookingId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) return console.error(data.message);
+
+                            const passengers = data.passengers.map(p => ({
+                        Id: p.id,
+                        FullName: p.fullName || "Unknown",
+                        SeatNumber: p.seatNumber || null
+                    }));
+
+                // Lấy danh sách ghế đã đặt
+                const occupiedSeats = passengers
+                    .map(p => p.SeatNumber)
+                    .filter(s => s);
+
+                // Render danh sách hành khách
+                passengerList.innerHTML = '';
+                passengers.forEach(p => {
+                    const name = p.FullName;
+                    const card = document.createElement('div');
+                    card.className = `
+                        flex items-center p-2 rounded-lg shadow-sm bg-white
+                        hover:shadow-md hover:bg-gray-50 cursor-pointer transition
+                    `;
+
+                    const avatar = document.createElement('div');
+                    avatar.className = 'w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold mr-2 flex-shrink-0';
+                    avatar.textContent = name.charAt(0);
+
+                    const info = document.createElement('div');
+                    const nameEl = document.createElement('div');
+                    nameEl.className = 'text-sm font-medium text-gray-800';
+                    nameEl.textContent = name;
+
+                    const seatEl = document.createElement('div');
+                    seatEl.className = 'text-xs text-gray-500 truncate';
+                    seatEl.textContent = p.SeatNumber || '-';
+
+                    info.appendChild(nameEl);
+                    info.appendChild(seatEl);
+
+                    card.appendChild(avatar);
+                    card.appendChild(info);
+
+                    passengerList.appendChild(card);
+                });
+
+                // Render seat map
+                renderSeatMap(occupiedSeats);
+            })
+            .catch(err => console.error(err));
+
+        // Render seat map
+        function renderSeatMap(occupiedSeats) {
+            const leftRows = ['A', 'B', 'C', 'D', 'E'];
+            const rightRows = ['F', 'G', 'H', 'I', 'J'];
+
+            seatMap.innerHTML = '';
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'flex justify-between w-full';
+            wrapper.style.paddingLeft = '30px';
+            wrapper.style.paddingRight = '40px';
+            wrapper.style.marginTop = '90px';
+            wrapper.style.width = '85%';
+
+            const leftCol = document.createElement('div');
+            leftCol.className = 'flex flex-col gap-y-[21px]';
+            const rightCol = document.createElement('div');
+            rightCol.className = 'flex flex-col gap-y-[21px]';
+
+            leftRows.forEach(row => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'flex gap-x-12';
+                renderSeat(row, 1, rowDiv, occupiedSeats);
+                renderSeat(row, 2, rowDiv, occupiedSeats);
+                leftCol.appendChild(rowDiv);
+            });
+
+            rightRows.forEach(row => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'flex gap-x-12';
+                renderSeat(row, 1, rowDiv, occupiedSeats);
+                renderSeat(row, 2, rowDiv, occupiedSeats);
+                rightCol.appendChild(rowDiv);
+            });
+
+            wrapper.appendChild(leftCol);
+            wrapper.appendChild(rightCol);
+            seatMap.appendChild(wrapper);
+        }
+
+        // Render 1 ghế
+        function renderSeat(row, col, parent, occupiedSeats) {
+            const seatCode = row + col;
+            const seatBtn = document.createElement('button');
+            seatBtn.dataset.seat = seatCode;
+
+            const baseClass = "w-8 h-8 rounded-lg flex flex-col items-center justify-center transition shadow-md border-0 outline-none";
+
+            // Ghế đã đặt
+            if (occupiedSeats.includes(seatCode)) {
+                seatBtn.className = `${baseClass} bg-red-500 text-white cursor-not-allowed`;
+                seatBtn.disabled = true;
+            } else {
+                seatBtn.className = `${baseClass} bg-white/90 text-gray-800 hover:bg-white`;
+            }
+
+            seatBtn.innerHTML = `
+                <span class="material-symbols-outlined text-[13px]">event_seat</span>
+                <span class="text-[8px] font-bold leading-none">${seatCode}</span>
+            `;
+
+            // Chọn ghế
+           
+
+            parent.appendChild(seatBtn);
+        }
+    });
+</script>

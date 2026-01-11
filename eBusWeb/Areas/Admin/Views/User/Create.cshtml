@@ -1,0 +1,239 @@
+﻿@{
+    ViewData["Title"] = "Create User";
+    ViewData["Header"] = "Create User";
+}
+
+<div class="user-create-page">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb mb-3">
+        <a href="/Admin" class="breadcrumb-link">Dashboard</a>
+        <span>/</span>
+        <a href="/Admin/User" class="breadcrumb-link">User Management</a>
+        <span>/</span>
+        <strong>Create User</strong>
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header mb-4">
+        <h1>Create New User</h1>
+        <p>Add a new administrator or customer account.</p>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card border-0 shadow-sm">
+        <form id="createUserForm">
+            @Html.AntiForgeryToken() <!-- nếu dùng ASP.NET Core -->
+            <div class="card-body">
+                <div class="row g-4">
+                    <!-- Full Name -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Full Name</label>
+                        <input type="text" class="form-control" placeholder="John Doe" name="FullName" />
+                    </div>
+                    <!-- Email -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Email Address</label>
+                        <input type="email" class="form-control" placeholder="john@example.com" name="Email" />
+                    </div>
+                    <!-- Phone -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Phone Number</label>
+                        <input type="text" class="form-control" placeholder="+84 912 345 678" name="PhoneNumber" />
+                    </div>
+                    <!-- Role -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Role</label>
+                        <div class="d-flex gap-3">
+                            <div class="role-selection">
+                                <input type="radio" name="Role" id="roleUser" value="0" class="btn-check" checked>
+                                <label class="role-card" for="roleUser">
+                                    <div class="role-content">
+                                        <span class="role-title">User</span>
+                                        <span class="role-desc">Standard access</span>
+                                    </div>
+                                    <i class="bi bi-check-circle-fill check-icon"></i>
+                                </label>
+                            </div>
+
+                            <div class="role-selection">
+                                <input type="radio" name="Role" id="roleAdmin" value="1" class="btn-check">
+                                <label class="role-card" for="roleAdmin">
+                                    <div class="role-content">
+                                        <span class="role-title">Admin</span>
+                                        <span class="role-desc">Full access</span>
+                                    </div>
+                                    <i class="bi bi-check-circle-fill check-icon"></i>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Password -->
+                    <div class="col-md-12">
+                        <label class="form-label fw-semibold">Password</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" placeholder="••••••••" name="Password" />
+                            <span class="input-group-text bg-white">
+                                <i class="fa-solid fa-eye-slash toggle-password" style="cursor:pointer;"></i>
+                            </span>
+                        </div>
+                        <small class="text-muted">At least 8 characters, 1 uppercase letter, 1 number</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card-footer bg-light d-flex justify-content-end gap-2">
+                <a href="/Admin/User" class="btn btn-light">Cancel</a>
+                <a href="#" id="btnCreateUser" class="btn btn-primary">
+                    <i class="fa-solid fa-plus me-1"></i> Create User
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+@section Styles {
+    <style>
+        .user-create-page {
+            max-width: 1100px; /* giới hạn chiều ngang */
+            width: 100%;
+            margin: 0 auto; /* căn giữa nội dung */
+            padding: 1.5rem; /* padding bên trong */
+        }
+
+            .user-create-page .breadcrumb {
+                font-size: 14px;
+                color: #64748b;
+                display: flex;
+                gap: 6px;
+            }
+
+            .user-create-page .page-header h1 {
+                font-size: 28px;
+                font-weight: 800;
+            }
+
+            .user-create-page .page-header p {
+                color: #64748b;
+            }
+
+            .user-create-page .card {
+                border-radius: 14px;
+            }
+
+        /* Breadcrumb links */
+        .breadcrumb-link {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+            .breadcrumb-link:hover {
+                text-decoration: underline;
+            }
+
+        /* Tùy chỉnh giao diện thẻ */
+        .role-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            border: 1.5px solid #dee2e6;
+            border-radius: 12px;
+            cursor: pointer;
+            min-width: 220px;
+            transition: all 0.2s ease-in-out;
+            position: relative;
+            background-color: #fff;
+        }
+
+        .role-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .role-title {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #495057;
+        }
+
+        .role-desc {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        /* Icon tích xanh ẩn mặc định */
+        .check-icon {
+            color: #ff4d4d; /* Màu đỏ như trong hình của bạn */
+            font-size: 1.2rem;
+            display: none;
+        }
+
+        /* Hiệu ứng khi được chọn (Checked) */
+        .btn-check:checked + .role-card {
+            border-color: #ff4d4d;
+            background-color: #fff5f5; /* Nền hồng nhạt */
+        }
+
+            .btn-check:checked + .role-card .role-title {
+                color: #ff4d4d;
+            }
+
+            .btn-check:checked + .role-card .check-icon {
+                display: block;
+            }
+
+        /* Hiệu ứng hover */
+        .role-card:hover {
+            border-color: #ff4d4d;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.toggle-password').forEach(icon => {
+            icon.addEventListener('click', function() {
+                const input = this.closest('.input-group').querySelector('input');
+                if (input.type === "password") {
+                    input.type = "text";
+                    this.classList.replace('fa-eye-slash', 'fa-eye');
+                } else {
+                    input.type = "password";
+                    this.classList.replace('fa-eye', 'fa-eye-slash');
+                }
+            });
+        });
+
+             document.getElementById("btnCreateUser").addEventListener("click", async function(e) {
+            e.preventDefault();
+
+            const form = document.getElementById("createUserForm");
+
+                   const data = {
+            FullName: form.FullName.value,
+            Email: form.Email.value,
+            PhoneNumber: form.PhoneNumber.value,
+            Role: parseInt(form.Role.value),
+            Password: form.Password.value
+        };
+            // Nếu dùng ASP.NET Core Anti-Forgery Token
+            const token = form.querySelector('input[name="__RequestVerificationToken"]')?.value;
+            const res = await fetch("/Admin/User/Create", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "RequestVerificationToken": token
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (res.ok) {
+            alert("Thành công!");
+        }
+         window.location.href = "/Admin/User";
+        });
+    </script>
+}

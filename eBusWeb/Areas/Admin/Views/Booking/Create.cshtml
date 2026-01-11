@@ -1,0 +1,428 @@
+﻿<!DOCTYPE html>
+<html lang="vi" class="light">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tạo Booking Mới - Quản lý Xe Buýt</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#1e40af",
+                        "background-light": "#f8f9fa",
+                        "background-dark": "#0f172a",
+                        "text-light": "#f1f5f9",
+                        "text-dark": "#1e293b"
+                    }
+                }
+            },
+            corePlugins: { preflight: false }
+        };
+    </script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #94a3b8;
+            }
+
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+
+        input:focus, select:focus {
+            box-shadow: 0 0 0 3px rgba(30,64,175,0.3);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 8px;
+            color: white;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+
+        .toast-success {
+            background: #10b981;
+        }
+
+        .toast-error {
+            background: #ef4444;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-text-dark dark:text-text-light min-h-screen flex flex-col transition-colors duration-200 font-sans">
+    <!-- Toast container -->
+    <div id="toastContainer"></div>
+
+    <main class="flex-1 p-4 md:p-8 lg:px-32 lg:py-12">
+        <div class="max-w-6xl mx-auto space-y-8">
+            <!-- Breadcrumbs -->
+            <nav class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                <a href="/" class="hover:text-primary">Trang chủ</a>
+                <span class="mx-2">/</span>
+                <a href="/Admin/Booking" class="hover:text-primary">Quản lý Booking</a>
+                <span class="mx-2">/</span>
+                <span class="font-semibold">Tạo mới</span>
+            </nav>
+
+            <!-- Header -->
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-black tracking-tight">Tạo Booking Mới</h1>
+                    <p class="mt-2 text-gray-600 dark:text-gray-400">Điền thông tin để tạo đặt chỗ xe buýt</p>
+                </div>
+                <div class="flex gap-4">
+                    <a href="/Admin/Booking" class="px-6 py-2.5 bg-gray-100 dark:bg-gray-700 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                        Hủy
+                    </a>
+                    <button id="confirmBookingBtn" class="px-6 py-2.5 bg-primary text-white rounded-full hover:bg-blue-700 transition disabled:opacity-60 flex items-center gap-2">
+                        <span class="material-symbols-outlined animate-spin hidden" id="loadingSpinner">refresh</span>
+                        Xác nhận Booking
+                    </button>
+                </div>
+            </div>
+
+            <form id="bookingForm" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Left Column -->
+                <div class="lg:col-span-2 space-y-8">
+                    <!-- Trip Information -->
+                    <section class="bg-white dark:bg-gray-900 rounded-xl shadow-md overflow-hidden">
+                        <div class="px-6 py-4 bg-gray-50 dark:bg-gray-800 flex items-center gap-3 border-b dark:border-gray-700">
+                            <span class="material-symbols-outlined text-primary text-2xl">map</span>
+                            <h2 class="text-xl font-bold">Thông tin chuyến đi</h2>
+                        </div>
+                        <div class="p-6 grid md:grid-cols-2 gap-6">
+                            <label class="block">
+                                <span class="text-sm font-medium mb-1.5 block">Tuyến đường</span>
+                                <select id="routeSelect" class="w-full p-3 rounded-lg border dark:bg-gray-800 dark:border-gray-600 focus:border-primary">
+                                    <option value="">Chọn tuyến đường</option>
+                                    @foreach (var r in ViewBag.Routes)
+                                    {
+                                        <option value="@r.Id">@r.Name</option>
+                                    }
+                                </select>
+                            </label>
+                            <label class="block">
+                                <span class="text-sm font-medium mb-1.5 block">Điểm đón</span>
+                                <select id="pickupStop" class="w-full p-3 rounded-lg border dark:bg-gray-800 dark:border-gray-600" disabled>
+                                    <option value="">Chọn điểm đón</option>
+                                </select>
+                            </label>
+                            <label class="block">
+                                <span class="text-sm font-medium mb-1.5 block">Điểm trả</span>
+                                <select id="dropoffStop" class="w-full p-3 rounded-lg border dark:bg-gray-800 dark:border-gray-600" disabled>
+                                    <option value="">Chọn điểm trả</option>
+                                </select>
+                            </label>
+                            <label class="block">
+                                <span class="text-sm font-medium mb-1.5 block">Tên liên hệ</span>
+                                <select id="contactName" class="form-select" style="width:100%">
+                                    <option value="">Chọn người liên hệ</option>
+                                </select>
+                            </label>
+                        </div>
+                    </section>
+
+                    <!-- Passenger Details -->
+                    <section class="bg-white dark:bg-gray-900 rounded-xl shadow-md overflow-hidden">
+                        <div class="px-6 py-4 bg-gray-50 dark:bg-gray-800 flex items-center justify-between border-b dark:border-gray-700">
+                            <h2 class="text-xl font-bold flex items-center gap-3">
+                                <span class="material-symbols-outlined text-primary text-2xl">groups</span>
+                                Hành khách
+                            </h2>
+                            <button type="button" id="addPassengerBtn" class="px-4 py-2 bg-primary/10 text-primary rounded-full hover:bg-primary/20 transition text-sm font-medium flex items-center gap-2">
+                                <span class="material-symbols-outlined text-base">add</span> Thêm hành khách
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-gray-50 dark:bg-gray-800/50">
+                                    <tr class="text-left text-gray-600 dark:text-gray-400 text-xs uppercase">
+                                        <th class="px-6 py-4">Họ tên</th>
+                                        <th class="px-6 py-4">Số ghế</th>
+                                        <th class="px-6 py-4 text-right">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="passengerTableBody" class="divide-y dark:divide-gray-700">
+                                    <!-- Rows added dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="px-6 py-4 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/50">
+                            <span class="text-primary font-bold">*</span> Tên hành khách phải khớp với giấy tờ tùy thân.
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Right Column - Summary -->
+                <aside class="lg:col-span-1">
+                    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-md p-6 sticky top-8 space-y-6">
+                        <h2 class="text-xl font-bold flex items-center gap-3">
+                            <span class="material-symbols-outlined text-primary">receipt_long</span>
+                            Tóm tắt Booking
+                        </h2>
+                        <div class="space-y-6">
+                            <div>
+                                <span class="text-sm font-medium block mb-2">Trạng thái</span>
+                                <div class="grid grid-cols-3 gap-3">
+                                    <label class="flex flex-col items-center p-3 border rounded-lg cursor-pointer hover:bg-primary/5 transition">
+                                        <input type="radio" name="status" value="Confirmed" checked class="mb-1" />
+                                        <span class="text-green-600 text-sm">Đã xác nhận</span>
+                                    </label>
+                                    <label class="flex flex-col items-center p-3 border rounded-lg cursor-pointer hover:bg-primary/5 transition">
+                                        <input type="radio" name="status" value="Pending" class="mb-1" />
+                                        <span class="text-yellow-600 text-sm">Chờ xử lý</span>
+                                    </label>
+                                    <label class="flex flex-col items-center p-3 border rounded-lg cursor-pointer hover:bg-primary/5 transition">
+                                        <input type="radio" name="status" value="Draft" class="mb-1" />
+                                        <span class="text-gray-500 text-sm">Nháp</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="text-sm font-medium block mb-2">Tổng tiền</span>
+                                <div class="flex items-center gap-2">
+                                    <input id="totalAmount" type="number" readonly value="0" class="w-full p-3 text-2xl font-bold text-right rounded-lg border dark:bg-gray-800 dark:border-gray-600" />
+                                    <span class="text-gray-500">VND</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        // Toast helper
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type} show`;
+            toast.textContent = message;
+            document.getElementById('toastContainer').appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        // Elements
+        const routeSelect = document.getElementById('routeSelect');
+        const pickupSelect = document.getElementById('pickupStop');
+        const dropoffSelect = document.getElementById('dropoffStop');
+        const addPassengerBtn = document.getElementById('addPassengerBtn');
+        const confirmBtn = document.getElementById('confirmBookingBtn');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const passengerBody = document.getElementById('passengerTableBody');
+        const totalAmountInput = document.getElementById('totalAmount');
+
+        let passengerCount = 0;
+        const PRICE_PER_SEAT = 150000;
+
+        function addPassengerRow() {
+            passengerCount++;
+            const row = document.createElement('tr');
+            row.className = 'hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors';
+            row.innerHTML = `
+                <td class="px-6 py-4">
+                    <input type="text" class="passenger-name w-full p-2.5 border rounded-lg dark:bg-gray-800 dark:border-gray-600" placeholder="Họ và tên" required />
+                </td>
+                <td class="px-6 py-4">
+                    <input type="text" class="passenger-seat w-24 p-2.5 border rounded-lg dark:bg-gray-800 dark:border-gray-600 font-medium text-primary" placeholder="A01" maxlength="4" required />
+                </td>
+                <td class="px-6 py-4 text-right">
+                    <button type="button" class="delete-passenger text-gray-400 hover:text-red-500 transition p-1">
+                        <span class="material-symbols-outlined">delete</span>
+                    </button>
+                </td>
+            `;
+            passengerBody.appendChild(row);
+
+            row.querySelector('.delete-passenger').onclick = () => {
+                row.remove();
+                passengerCount--;
+                updateTotalAmount();
+            };
+
+            row.querySelector('.passenger-name').focus();
+            updateTotalAmount();
+        }
+
+        function updateTotalAmount() {
+            totalAmountInput.value = passengerCount * PRICE_PER_SEAT;
+        }
+
+        // Load stops
+        routeSelect.addEventListener('change', async () => {
+            const routeId = routeSelect.value.trim();
+            if (!routeId) {
+                pickupSelect.innerHTML = '<option value="">Chọn điểm đón</option>';
+                dropoffSelect.innerHTML = '<option value="">Chọn điểm trả</option>';
+                pickupSelect.disabled = true;
+                dropoffSelect.disabled = true;
+                return;
+            }
+
+            pickupSelect.disabled = true;
+            dropoffSelect.disabled = true;
+            pickupSelect.innerHTML = '<option value="">Đang tải...</option>';
+            dropoffSelect.innerHTML = '<option value="">Đang tải...</option>';
+
+            try {
+                const res = await fetch(`/Admin/Booking/GetStopsByRoute?routeId=${routeId}`);
+                if (!res.ok) throw new Error(`Lỗi server ${res.status}`);
+
+                const data = await res.json();
+
+                if (!data.success) throw new Error(data.message || 'Không tải được danh sách điểm dừng');
+
+                const stops = data.stops || [];
+                        if (stops.length === 0) {
+            pickupSelect.innerHTML = '<option value="">Tuyến này chưa có điểm đón</option>';
+            dropoffSelect.innerHTML = '<option value="">Tuyến này chưa có điểm trả</option>';
+            pickupSelect.disabled = true;
+            dropoffSelect.disabled = true;
+            showToast('Tuyến này chưa cấu hình điểm dừng', 'error');
+            return;
+        }
+            const options = stops.map(s =>
+            `<option value="${s.id}">${s.name}</option>`
+        ).join('');
+
+                pickupSelect.innerHTML = `<option value="">Chọn điểm đón</option>${options}`;
+                dropoffSelect.innerHTML = `<option value="">Chọn điểm trả</option>${options}`;
+
+                pickupSelect.disabled = false;
+                dropoffSelect.disabled = false;
+
+            } catch (err) {
+                console.error('Lỗi tải điểm dừng:', err);
+                showToast('Không thể tải danh sách điểm dừng: ' + err.message, 'error');
+                pickupSelect.innerHTML = '<option value="">Lỗi tải dữ liệu</option>';
+                dropoffSelect.innerHTML = '<option value="">Lỗi tải dữ liệu</option>';
+            }
+        });
+
+        // Add passenger initial
+        addPassengerBtn.addEventListener('click', addPassengerRow);
+        addPassengerRow(); // Default 1 passenger
+
+        // Confirm booking
+        confirmBtn.addEventListener('click', async () => {
+            confirmBtn.disabled = true;
+            loadingSpinner.classList.remove('hidden');
+            confirmBtn.textContent = 'Đang xử lý...';
+
+            try {
+                if (!routeSelect.value) throw new Error('Vui lòng chọn tuyến đường');
+                if (!pickupSelect.value || !dropoffSelect.value) throw new Error('Vui lòng chọn điểm đón và trả');
+                if (pickupSelect.value === dropoffSelect.value) throw new Error('Điểm đón và trả không được trùng nhau');
+
+                        const contactData = $('#contactName').select2('data');
+
+        if (!contactData || contactData.length === 0) {
+            throw new Error('Vui lòng chọn người liên hệ');
+        }
+
+        const contactName = contactData[0].text; // tên hiển thị
+
+
+                const passengers = [];
+                passengerBody.querySelectorAll('tr').forEach(row => {
+                    const name = row.querySelector('.passenger-name')?.value?.trim();
+                    const seat = row.querySelector('.passenger-seat')?.value?.trim();
+                    if (name && seat) passengers.push({ fullName: name, seatNumber: seat });
+                });
+
+                if (passengers.length === 0) throw new Error('Vui lòng thêm ít nhất 1 hành khách');
+
+                const payload = {
+                    booking: {
+                        routeId: parseInt(routeSelect.value) || 0,
+                        pickupStopId: parseInt(pickupSelect.value) || 0,
+                        dropoffStopId: parseInt(dropoffSelect.value) || 0,
+                        contactName,
+                        bookingStatus: document.querySelector('input[name="status"]:checked')?.value || 'Pending',
+                        totalAmount: parseInt(totalAmountInput.value) || 0
+                    },
+                    passengers
+                };
+
+                const res = await fetch('/Admin/Booking/Create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await res.json();
+
+                if (result.success) {
+                    showToast('Tạo booking thành công!', 'success');
+                    window.location.href = result.redirectUrl || '/Admin/Booking';
+                } else {
+                    throw new Error(result.message || 'Tạo booking thất bại');
+                }
+            } catch (err) {
+                showToast('Lỗi: ' + err.message, 'error');
+                console.error(err);
+            } finally {
+                confirmBtn.disabled = false;
+                loadingSpinner.classList.add('hidden');
+                confirmBtn.textContent = 'Xác nhận Booking';
+            }
+        });
+        $(document).ready(function () {
+            $('#contactName').select2({
+                placeholder: 'Chọn người liên hệ',
+                allowClear: true,
+                width: '100%',
+                minimumInputLength: 1, // gõ ít nhất 1 ký tự
+                ajax: {
+                    url: '/Admin/Booking/GetForSelect2',
+                    dataType: 'json',
+                    delay: 300,
+                    data: function (params) {
+                        return {
+                            q: params.term // từ khóa search
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data // [{id, text}]
+                        };
+                    },
+                    cache: true
+                }
+            });
+        });
+
+    </script>
+    <script src="~/dist/js/select2.js"></script>
+
+</body>
+</html>

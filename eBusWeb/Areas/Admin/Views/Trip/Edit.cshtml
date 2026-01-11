@@ -1,0 +1,363 @@
+﻿
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+
+<script>
+    tailwind.config = {
+        corePlugins: { preflight: false }
+    }
+</script>
+
+<style>
+    .tailwind-scope {
+        font-size: 14px;
+    }
+
+        .tailwind-scope h1 {
+            font-size: 2.2rem;
+            line-height: 1.2;
+        }
+
+        .tailwind-scope h2 {
+            font-size: 1.9rem;
+        }
+
+        .tailwind-scope h3 {
+            font-size: 1rem;
+        }
+
+        .tailwind-scope p {
+            font-size: 0.85rem;
+        }
+
+        .tailwind-scope label {
+            font-size: 0.65rem;
+            letter-spacing: 0.1em;
+        }
+
+        .tailwind-scope input, .tailwind-scope select {
+            font-size: 0.85rem;
+            height: 3rem;
+        }
+
+        .tailwind-scope button {
+            font-size: 0.7rem;
+            padding-top: 0.65rem;
+            padding-bottom: 0.65rem;
+        }
+
+    .select2-selection__rendered {
+        line-height: 2.2rem !important;
+    }
+
+    .select2-container .select2-selection--single {
+        height: 3rem !important;
+    }
+
+    .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
+        color: #fff;
+        background-color: #1e88e5;
+        border: none;
+    }
+</style>
+
+<div class="tailwind-scope w-full p-0">
+    <div class="py-5 px-4 md:px-8">
+        <div class="max-w-5xl mx-0">
+
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-6">
+                <ol class="breadcrumb mb-0 bg-transparent p-0 text-[0.85rem] fw-semibold">
+                    <li class="breadcrumb-item">
+                        <a href="/Admin/Dashboard" class="text-muted text-decoration-none hover:text-red-600 transition flex items-center">
+                            <i class="fa-solid fa-house me-1.5 text-[0.9rem]"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="/Admin/Trip" class="text-muted text-decoration-none hover:text-red-600 transition">
+                            Trip Management
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active fw-bold text-primary" aria-current="page">
+                        @Model.RouteName
+                    </li>
+                </ol>
+            </nav>
+
+            <!-- Header -->
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
+                <div>
+                    <h1 class="font-black text-gray-900 tracking-tight m-0">
+                        Edit Trip Details
+                    </h1>
+                    <p class="text-gray-500 mt-1.5 font-medium">
+                        Manage logistics and schedules for this trip.
+                    </p>
+                </div>
+                <button id="deleteBtn"
+                        class="flex items-center gap-1.5 px-4 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition shadow-sm bg-white">
+                    <i class="fa-solid fa-trash-can"></i>
+                    <span class="font-bold uppercase tracking-widest">Delete</span>
+                </button>
+            </div>
+            <div class="relative h-56 rounded-2xl overflow-hidden mb-8 shadow-xl border border-gray-100">
+                <img src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957"
+                     alt="Bus"
+                     class="w-full h-full object-cover" />
+
+                <div class="absolute inset-0 flex flex-col justify-end p-8"
+                     style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);">
+                    <span class="text-red-500 text-[0.55rem] font-black uppercase tracking-[0.35em] mb-1.5">
+                        Current Route
+                    </span>
+                    <h2 class="text-white font-black flex items-center m-0">
+                        NEW YORK
+                        <i class="fa-solid fa-arrow-right-long mx-3 text-red-500 text-sm"></i>
+                        BOSTON
+                    </h2>
+                </div>
+            </div>
+            <div id="tripMessage" class="alert hidden mb-4 px-4 py-2 rounded text-white font-semibold"></div>
+            <!-- Form Card -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-7 md:p-10">
+                <form id="editTripForm" method="post" class="flex flex-col gap-10">
+
+                    <!-- Logistics & Vehicle -->
+                    <section>
+                        <div class="flex items-center gap-3 mb-6 border-b border-gray-50 pb-4">
+                            <div class="bg-red-50 p-2.5 rounded-xl">
+                                <i class="fa-solid fa-bus-simple text-red-600"></i>
+                            </div>
+                            <h3 class="font-black text-gray-800 uppercase tracking-widest m-0">
+                                Logistics & Vehicle
+                            </h3>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="flex flex-col gap-1.5">
+                                <label>Operator Name</label>
+                                <input type="text" name="OperatorName" value="@Model.OperatorName"
+                                       class="bg-gray-50 border border-gray-200 px-4 font-semibold focus:bg-white focus:border-red-500 transition" />
+                            </div>
+
+                            <div class="flex flex-col gap-1.5">
+                                <label>Bus Type</label>
+                                <select name="BusType" id="busType" class="bg-gray-50 border border-gray-200 px-4 font-semibold">
+                                    <option></option>
+                                    @foreach (var type in ViewBag.BusTypes as List<string>)
+                                    {
+                                        <option value="@type" @(Model.BusType == type ? "selected" : "")>@type</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="flex flex-col gap-1.5">
+                                <label>Route</label>
+                                <select name="RouteId" id="routeSelect" class="bg-gray-50 border border-gray-200 px-4 font-semibold">
+                                    <option></option>
+                                    @foreach (var r in ViewBag.Routes as List<eBusWeb.Models.Route>)
+                                    {
+                                        <option value="@r.Id" @(Model.RouteId == r.Id ? "selected" : "")>@r.Name</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Schedule & Pricing -->
+                    <section>
+                        <div class="flex items-center gap-3 mb-6 border-b border-gray-50 pb-4">
+                            <div class="bg-red-50 p-2.5 rounded-xl">
+                                <i class="fa-solid fa-clock-rotate-left text-red-600"></i>
+                            </div>
+                            <h3 class="font-black text-gray-800 uppercase tracking-widest m-0">
+                                Schedule & Pricing
+                            </h3>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-red-500">Departure Time</label>
+                                <input type="datetime-local" name="DepartureTime" value="@Model.DepartureTime.ToString("yyyy-MM-ddTHH:mm")"
+                                       class="bg-gray-50 border border-gray-200 px-4 font-bold" />
+                            </div>
+
+                            <div class="flex flex-col gap-1.5">
+                                <label>Arrival Time</label>
+                                <input type="datetime-local" name="ArrivalTime" value="@Model.ArrivalTime.ToString("yyyy-MM-ddTHH:mm")"
+                                       class="bg-gray-50 border border-gray-200 px-4 font-bold" />
+                            </div>
+
+                            <div class="flex flex-col gap-1.5">
+                                <label>Base Price (USD)</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-gray-400">$</span>
+                                    <input type="number" name="BasePrice" value="@Model.BasePrice"
+                                           class="bg-gray-50 border border-gray-200 pl-8 pr-4 font-black text-gray-900" />
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Status -->
+                    <section>
+                        <div class="flex flex-col md:flex-row md:items-end justify-end gap-6">
+                            <div class="flex flex-col gap-1.5 w-48">
+                                <label>Status</label>
+                                <select name="Status" class="bg-gray-50 border border-gray-200 px-4 font-semibold">
+                                    <option value="1" @(Model.Status == 1 ? "selected" : "")>Scheduled</option>
+                                    <option value="2" @(Model.Status == 2 ? "selected" : "")>Delayed</option>
+                                    <option value="3" @(Model.Status == 3 ? "selected" : "")>Cancelled</option>
+                                    <option value="4" @(Model.Status == 4 ? "selected" : "")>Completed</option>
+                                </select>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Actions -->
+                    <div class="flex justify-end gap-3 pt-5">
+                        <a href="/Admin/Trip"
+                           class="inline-flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold px-4 py-2 rounded-lg transition text-[0.75rem] uppercase tracking-widest" style="text-decoration: none;">
+                            Back
+                        </a>
+
+                        <button type="button" onclick="saveTrip()"
+                                class="bg-red-600 hover:bg-red-700 text-white px-9 py-3 rounded-lg font-black shadow-md shadow-red-200 transition active:scale-95 uppercase tracking-[0.22em] text-[0.75rem]">
+                            Save
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+<div id="popupMessage" class="hidden fixed top-20 left-1/2 -translate-x-1/2 z-50 max-w-md w-full px-4 py-3 rounded shadow-lg flex items-center gap-3 font-semibold text-white">
+    <i id="popupMessageIcon" class="fa-solid fa-circle-info"></i>
+    <span id="popupMessageText"></span>
+    <button id="popupMessageConfirmBtn" class="ml-auto bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded hidden text-sm font-bold">Delete</button>
+</div>
+
+@section Scripts {
+    <script>
+                function showPopup(message, type = 'info', showConfirm = false) {
+            const popup = document.getElementById('popupMessage');
+            const text = document.getElementById('popupMessageText');
+            const icon = document.getElementById('popupMessageIcon');
+            const btn = document.getElementById('popupMessageConfirmBtn');
+
+            // Cập nhật message
+            text.textContent = message;
+
+            // Hiển thị nút confirm nếu cần
+            btn.style.display = showConfirm ? 'block' : 'none';
+
+            // Chọn màu nền theo type
+            popup.style.backgroundColor = type === 'success' ? '#22c55e' :
+                                         type === 'danger' ? '#ef4444' :
+                                         type === 'warning' ? '#f59e0b' : '#3b82f6';
+
+            popup.classList.remove('hidden');
+        }
+
+        $(document).ready(function () {
+            // Select2 for Route
+            $('#routeSelect').select2({
+                theme: 'bootstrap-5',
+                placeholder: 'Select a route...',
+                allowClear: true,
+                width: '100%'
+            });
+
+            // Select2 for Bus Type with tags
+            $('#busType').select2({
+                theme: 'bootstrap-5',
+                tags: true,
+                placeholder: 'Select or add bus type',
+                width: '100%'
+            });
+        });
+
+        function showMessage(message, type = 'success') {
+            const msg = document.getElementById('tripMessage');
+            msg.textContent = message;
+            msg.className = `alert mb-4 px-4 py-2 rounded font-semibold text-white`;
+
+            if(type === 'success') msg.style.backgroundColor = '#22c55e'; // green
+            else if(type === 'danger') msg.style.backgroundColor = '#ef4444'; // red
+            else msg.style.backgroundColor = '#facc15'; // yellow
+
+            msg.classList.remove('hidden');
+
+            setTimeout(() => msg.classList.add('hidden'), 3000);
+        }
+
+        async function saveTrip() {
+            const form = document.getElementById('editTripForm');
+
+            const data = {
+                Id: @Model.Id,
+                RouteId: parseInt($('#routeSelect').val()),
+                DepartureTime: form.DepartureTime.value,
+                ArrivalTime: form.ArrivalTime.value,
+                OperatorName: form.OperatorName.value,
+                BusType: $('#busType').val(),
+                BasePrice: parseFloat(form.BasePrice.value),
+                Status: parseInt(form.Status.value)
+            };
+
+            try {
+                const res = await fetch('/Admin/Trip/Edit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if(!res.ok) throw new Error('HTTP ' + res.status);
+
+                const result = await res.json();
+
+                if(result.success) {
+                    showMessage('Saved successfully!', 'success');
+                    setTimeout(() => window.location.href = '/Admin/Trip', 1200);
+                } else {
+                    showMessage(result.message || 'Save failed', 'danger');
+                }
+
+            } catch(err) {
+                showMessage('Server error: ' + err.message, 'danger');
+            }
+        }
+            document.getElementById('deleteBtn').addEventListener('click', () => {
+            const tripId = @Model.Id;
+            const tripName =  @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RouteName));
+            showPopup(`Bạn có chắc muốn xóa Trip #${tripId} - "${tripName}"?`, 'warning', true);
+        });
+
+        // Xác nhận Delete
+        document.getElementById('popupMessageConfirmBtn').addEventListener('click', async () => {
+            const tripId = @Model.Id;
+
+            try {
+                const res = await fetch(`/Admin/Trip/Delete/${tripId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await res.json();
+
+                if(result.success) {
+                    showPopup('Trip deleted successfully!', 'success');
+                    setTimeout(() => window.location.href = '/Admin/Trip', 1200);
+                } else {
+                    showPopup(result.message || 'Delete failed', 'danger');
+                }
+            } catch(err) {
+                showPopup('Server error: ' + err.message, 'danger');
+            }
+        });
+</script>
+}

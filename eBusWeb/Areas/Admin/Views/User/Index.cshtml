@@ -1,0 +1,615 @@
+﻿@model List<eBusWeb.Models.User>
+@{
+    int total = ViewBag.Total;
+    int page = ViewBag.Page;
+    int pageSize = ViewBag.PageSize;
+    int totalPages = (int)Math.Ceiling(total / (double)pageSize);
+}
+
+<div class="user-management-page">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item small"><a href="/Admin/Dashboard"><i class="fa-solid fa-house me-1"></i>Dashboard</a></li>
+            <li class="breadcrumb-item small active" aria-current="page">User Management</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="page-header">
+        <h1>User Management</h1>
+        <p>Manage user accounts, roles, and access permissions.</p>
+    </div>
+
+    <!-- Toolbar -->
+    <form id="filterForm" method="get">
+        <div class="toolbar">
+            <div class="toolbar-left">
+
+                <input type="text"
+                       name="search"
+                       value="@ViewBag.Search"
+                       placeholder="Search by name or email..."
+                       oninput="submitForm()" />
+
+                <select name="role" onchange="submitForm()">
+                    <option value="">All</option>
+                    <option value="1" selected="@(ViewBag.Role == 1)">Admin</option>
+                    <option value="0" selected="@(ViewBag.Role == 0)">Customer</option>
+                </select>
+
+                <!-- ⭐ QUAN TRỌNG -->
+                <input type="hidden"
+                       id="pageInput"
+                       name="page"
+                       value="@ViewBag.Page" />
+
+            </div>
+
+            <a href="/Admin/User/Create" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> Add User
+            </a>
+        </div>
+    </form>
+
+    <!-- Table -->
+    <div class="table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Contact</th>
+                    <th>Role</th>
+                    <th>Created at</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+
+            <tbody id="userTableBody">
+                @foreach (var user in Model)
+                {
+                    <tr>
+                        <td>
+                            <strong>@user.FullName</strong>
+                            <div class="sub">#@user.Id.ToString().Substring(0, 8)</div>
+                        </td>
+
+                        <td>
+                            @user.Email <br />
+                            <span class="sub">@user.PhoneNumber</span>
+                        </td>
+
+                        <td>
+                            @if (user.Role == 0)
+                            {
+                                <span class="badge admin">Customer</span>
+                            }
+                            else if (user.Role == 1)
+                            {
+                                <span class="badge agent">Admin</span>
+                            }
+                          
+                        </td>
+
+                        <td>
+                            <span class="status created">
+                                @user.CreatedAt.ToString("dd/MM/yyyy")
+                            </span>
+                        </td>
+
+                        <td class="text-end action-buttons">
+                            <button class="btn-view" data-id="@user.Id">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn-edit" onclick="window.location.href='/Admin/User/Edit/@user.Id'">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger btn-delete"
+                                    data-id="@user.Id"
+                                    data-name="@user.FullName"
+                                    data-email="@user.Email">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+        <div class="pagination">
+
+            <!-- Previous -->
+            <button type="button"
+                    class="nav-btn"
+                    @(page == 1 ? "disabled" : "")
+                    onclick="goPage(@(page - 1))">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                <button type="button"
+                        class="page-btn @(i == page ? "active" : "")"
+                        onclick="goPage(@i)">
+                    @i
+                </button>
+            }
+
+            <!-- Next -->
+            <button type="button"
+                    class="nav-btn"
+                    @(page == totalPages ? "disabled" : "")
+                    onclick="goPage(@(page + 1))">
+                <i class="bi bi-chevron-right"></i>
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="modal fade" id="viewUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 14px;">
+            <div class="modal-header border-0 pt-4 px-4 pb-0">
+                <h5 class="modal-title fw-bold fs-3">User Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Full Name</label>
+                        <input type="text" id="vFullName" class="form-control bg-light" disabled>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Email Address</label>
+                        <input type="text" id="vEmail" class="form-control bg-light" disabled>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Phone Number</label>
+                        <input type="text" id="vPhone" class="form-control bg-light" disabled>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Role</label>
+                        <div id="vRoleContainer" class="d-flex gap-3">
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label fw-semibold">Password</label>
+                        <div class="input-group">
+                            <input type="password" id="vPasssword" class="form-control bg-light"  disabled>
+                            <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
+                        </div>
+                        <small class="text-muted">Password is hidden for security.</small>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 bg-light p-3" style="border-bottom-left-radius: 14px; border-bottom-right-radius: 14px;">
+                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Close</button>
+                <button type="button" id="vEditBtn" class="btn btn-primary px-4">Edit User</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content delete-modal shadow rounded-4 border-0">
+
+            <!-- ICON -->
+            <div class="text-center pt-4">
+                <div class="danger-icon mx-auto">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                </div>
+            </div>
+
+            <!-- BODY -->
+            <div class="modal-body text-center px-4">
+                <h5 class="fw-bold mt-3">Delete User Account</h5>
+                <p class="text-muted small">
+                    You are about to permanently delete this user. This action cannot be undone.
+                </p>
+
+                <!-- TARGET USER -->
+                <div class="target-user d-flex align-items-center gap-3 mt-4">
+                    <div class="avatar">
+                        <i class="bi bi-person"></i>
+                    </div>
+                    <div class="text-start">
+                        <div class="fw-semibold" id="deleteUserName"></div>
+                        <div class="text-muted small" id="deleteUserEmail"></div>
+                    </div>
+                </div>
+
+                <!-- WARNING -->
+                <div class="alert alert-danger text-start small mt-3">
+                    <i class="bi bi-info-circle me-1"></i>
+                    All associated current and past records related to this account
+                    will be permanently removed.
+                </div>
+
+                <!-- CONFIRM INPUT -->
+                <div class="text-start mt-3">
+                    <label class="small fw-semibold mb-1">
+                        Type <code>DELETE</code> to confirm
+                    </label>
+                    <input type="text"
+                           class="form-control delete-input"
+                           placeholder="DELETE"
+                           id="deleteConfirmInput">
+                </div>
+            </div>
+
+            <!-- FOOTER -->
+            <div class="modal-footer border-0 px-4 pb-4 d-flex">
+                <!-- DELETE bên trái -->
+                <button class="btn btn-danger flex-fill me-2"
+                        id="confirmDeleteBtn"
+                        disabled>
+                    <i class="bi bi-trash me-1"></i> Delete Account
+                </button>
+
+                <!-- CANCEL bên phải -->
+                <button class="btn btn-outline-secondary flex-fill"
+                        data-bs-dismiss="modal">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<style>
+    /* Tinh chỉnh Breadcrumb */
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "\f105"; /* Icon angle-right từ FontAwesome */
+        font-family: "Font Awesome 6 Free";
+        font-weight: 900;
+        font-size: 0.7rem;
+        color: #adb5bd;
+    }
+
+    .breadcrumb-item a {
+        color: #6c757d;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+        .breadcrumb-item a:hover {
+            color: #0d6efd;
+        }
+
+    .status.created {
+    background: linear-gradient(135deg, #6ee7b7, #34d399);
+    color: #4338ca;
+    border-radius: 999px; /* pill */
+    padding: 4px 10px;
+    font-size: 0.85rem;
+    display: inline-block;
+}
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+        margin-top: 20px;
+    }
+
+        .pagination button {
+            border: none;
+            cursor: pointer;
+            min-width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+    /* Page number */
+    .page-btn {
+        background: #f1f5f9;
+        color: #334155;
+    }
+
+        .page-btn:hover {
+            background: #e2e8f0;
+        }
+
+        /* Active page */
+        .page-btn.active {
+            background: linear-gradient(135deg, #6ee7b7, #34d399);
+            color: #064e3b;
+            box-shadow: 0 4px 10px rgba(52, 211, 153, 0.4);
+        }
+
+    /* Prev / Next */
+    .nav-btn {
+        background: #e5e7eb;
+        color: #374151;
+    }
+
+        .nav-btn:hover {
+            background: #d1d5db;
+        }
+
+    /* Disabled */
+    .pagination button:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    /* Style cho role card trong modal xem chi tiết */
+    .active-role {
+        border-color: #ff4d4d !important;
+        background-color: #fff5f5 !important;
+    }
+
+        .active-role .role-title {
+            color: #ff4d4d !important;
+        }
+
+    .inactive-role {
+        opacity: 0.5;
+        cursor: default;
+        background-color: #f8f9fa;
+    }
+
+    #vRoleContainer .role-card {
+        min-width: 150px; /* Nhỏ hơn một chút để vừa modal */
+        flex: 1;
+    }
+    /* Layout tổng thể cho Role */
+    .role-grid-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        width: 100%;
+    }
+
+    /* Card cơ bản */
+    .role-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        border: 2px solid #f1f5f9; /* Màu viền nhạt mặc định */
+        border-radius: 12px;
+        background: #ffffff;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+    }
+
+    .role-content {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .role-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #334155;
+    }
+
+    .role-desc {
+        font-size: 0.85rem;
+        color: #64748b;
+    }
+
+    /* Trạng thái Active (Được chọn) */
+    .role-card.active-role {
+        border-color: #ff4d4d !important;
+        background-color: #fffafa !important;
+        box-shadow: 0 4px 12px rgba(255, 77, 77, 0.08);
+    }
+
+        .role-card.active-role .role-title {
+            color: #ff4d4d !important;
+        }
+
+    /* Badge icon tích xanh */
+    .check-icon-badge {
+        width: 24px;
+        height: 24px;
+        background-color: #ff4d4d;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        box-shadow: 0 2px 4px rgba(255, 77, 77, 0.3);
+    }
+
+    /* Trạng thái Inactive (Không được chọn) */
+    .role-card.inactive-role {
+        opacity: 0.6;
+        background-color: #f8fafc;
+        border-style: dashed; /* Tạo hiệu ứng phân biệt rõ */
+    }
+
+    /* Hover nhẹ cho đẹp */
+    .role-card:not(.active-role):hover {
+        border-color: #e2e8f0;
+        background-color: #f1f5f9;
+    }
+    .delete-modal {
+        max-width: 480px;
+    }
+
+    .danger-icon {
+        width: 56px;
+        height: 56px;
+        background: #fde2e2;
+        color: #dc2626;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+
+    .target-user {
+        background: #fff5f5;
+        border: 1px solid #fecaca;
+        border-radius: 12px;
+        padding: 12px;
+    }
+
+        .target-user .avatar {
+            width: 40px;
+            height: 40px;
+            background: #fee2e2;
+            color: #b91c1c;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+    .delete-input {
+        border: 1px solid #fecaca;
+    }
+
+        .delete-input:focus {
+            border-color: #dc2626;
+            box-shadow: 0 0 0 0.2rem rgba(220,38,38,.15);
+        }
+
+</style>
+<script>
+    function goPage(p) {
+        document.getElementById("pageInput").value = p;
+        document.getElementById("filterForm").submit();
+    }
+
+    function submitForm() {
+        document.getElementById("pageInput").value = 1;
+        document.getElementById("filterForm").submit();
+    }
+
+
+
+        document.addEventListener("DOMContentLoaded", function () {
+        const viewModal = new bootstrap.Modal(document.getElementById('viewUserModal'));
+
+        document.querySelectorAll('.btn-view').forEach(btn => {
+            btn.addEventListener('click', async function () {
+                const userId = this.getAttribute('data-id');
+
+                try {
+                    // Gọi API lấy thông tin chi tiết
+                    const response = await fetch(`/Admin/User/Details/${userId}`);
+                    const user = await response.json();
+
+                    // Đổ dữ liệu vào Input
+                    document.getElementById('vFullName').value = user.fullName;
+                    document.getElementById('vEmail').value = user.email;
+                    document.getElementById('vPhone').value = user.phoneNumber || "N/A";
+                    const passField = document.getElementById('vPasssword');
+                if(passField) passField.value = user.password || "********";
+                    const roleContainer = document.getElementById('vRoleContainer');
+                    const isAdmin = user.role === 1;
+
+                    roleContainer.innerHTML = `
+                        <div class="role-card ${isAdmin ? 'active-role' : 'inactive-role'}">
+                            <div class="role-content">
+                                <span class="role-title">Admin</span>
+                                <span class="role-desc">Full access</span>
+                            </div>
+                            ${isAdmin ? '<i class="bi bi-check-circle-fill check-icon" style="display:block"></i>' : ''}
+                        </div>
+                        <div class="role-card ${!isAdmin ? 'active-role' : 'inactive-role'}">
+                            <div class="role-content">
+                                <span class="role-title">User</span>
+                                <span class="role-desc">Standard access</span>
+                            </div>
+                            ${!isAdmin ? '<i class="bi bi-check-circle-fill check-icon" style="display:block"></i>' : ''}
+                        </div>
+                    `;
+
+                    // Nút chỉnh sửa nhanh
+                    document.getElementById('vEditBtn').onclick = () => {
+                        window.location.href = `/Admin/User/Edit/${userId}`;
+                    };
+
+                    viewModal.show();
+                } catch (error) {
+                    alert("Could not load user data.");
+                }
+            });
+        });
+    });
+</script>
+
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        let deleteUserId = null;
+
+        const modalEl = document.getElementById("deleteUserModal");
+        const inputConfirm = document.getElementById("deleteConfirmInput");
+        const confirmBtn = document.getElementById("confirmDeleteBtn");
+        const userNameEl = document.getElementById("deleteUserName");
+        const userEmailEl = document.getElementById("deleteUserEmail");
+
+        if (!inputConfirm || !confirmBtn) {
+            console.error("Delete modal elements not found");
+            return;
+        }
+
+        /* ===== Enable / Disable button ===== */
+            inputConfirm.addEventListener("input", function () {
+        const value = this.value.trim().toUpperCase();
+        confirmBtn.disabled = value !== "DELETE";
+    });
+
+
+        /* ===== Open modal ===== */
+        document.addEventListener("click", function (e) {
+            const btn = e.target.closest(".btn-delete");
+            if (!btn) return;
+
+            deleteUserId = btn.dataset.id;
+
+            userNameEl.innerText = btn.dataset.name;
+            userEmailEl.innerText = btn.dataset.email;
+
+            inputConfirm.value = "";
+            confirmBtn.disabled = true;
+
+            bootstrap.Modal.getOrCreateInstance(modalEl).show();
+        });
+
+        /* ===== Confirm delete ===== */
+        confirmBtn.addEventListener("click", async function () {
+            if (confirmBtn.disabled || !deleteUserId) return;
+
+            try {
+                const res = await fetch(`/Admin/User/Delete/${deleteUserId}`, {
+                    method: "DELETE"
+                });
+
+                if (res.ok) {
+                    location.reload();
+                } else {
+                    alert("Xoá thất bại");
+                }
+            } catch {
+                alert("Lỗi kết nối server");
+            }
+        });
+
+        /* ===== Reset when modal close ===== */
+        modalEl.addEventListener("hidden.bs.modal", function () {
+            deleteUserId = null;
+            inputConfirm.value = "";
+            confirmBtn.disabled = true;
+        });
+
+    });
+</script>

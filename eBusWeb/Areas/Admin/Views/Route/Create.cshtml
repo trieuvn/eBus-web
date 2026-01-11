@@ -1,0 +1,416 @@
+﻿@{
+    ViewData["Title"] = "Create Route";
+    ViewData["Header"] = "Create New Route";
+}
+
+<style>
+    /* Phần này giúp tránh sidebar bên trái */
+    .main-content-wrapper {
+        padding-left: 20px; /* Tăng chỉ số này nếu sidebar của bạn rộng hơn */
+        max-width: 1000px; /* Giới hạn độ rộng để form không bị quá dài */
+        margin: 0 auto 0 0; /* Căn trái toàn bộ khối */
+    }
+
+    .bg-light-custom {
+        background-color: #f8f9fa;
+    }
+
+    .card {
+        border: none;
+        border-radius: 12px;
+    }
+
+    .card-header {
+        border-bottom: 1px solid #edf2f9;
+    }
+
+    .form-control, .form-select, .input-group-text {
+        border-color: #e2e8f0;
+        border-radius: 8px;
+        padding: 0.5rem 0.75rem; /* Làm nhỏ padding một chút */
+        font-size: 0.9rem;
+    }
+
+        .form-control:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+    .stop-item {
+        transition: all 0.2s;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+    }
+
+        .stop-item:hover {
+            border-color: #3b82f6 !important;
+        }
+
+    .stop-number {
+        width: 32px;
+        height: 32px;
+        background-color: #eff6ff;
+        color: #3b82f6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-weight: bold;
+        font-size: 0.85rem;
+    }
+
+    .btn-add-stop {
+        border: 2px dashed #cbd5e1;
+        background: transparent;
+        color: #64748b;
+        border-radius: 12px;
+        font-size: 0.9rem;
+    }
+
+        .btn-add-stop:hover {
+            border-color: #3b82f6;
+            color: #3b82f6;
+            background: #f0f7ff;
+        }
+
+    .input-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        font-size: 0.8rem;
+    }
+
+    .has-icon {
+        padding-left: 35px !important;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "/";
+    }
+</style>
+
+<div class="main-content-wrapper">
+    <div class="container-fluid py-4">
+
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <div>
+                <nav aria-label="breadcrumb" class="mb-1">
+                    <ol class="breadcrumb small mb-0" style="background: none; padding: 0;">
+                        <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-muted">Admin Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/Admin/Route" class="text-decoration-none text-muted">Routes</a></li>
+                        <li class="breadcrumb-item active text-dark fw-semibold" aria-current="page">Create New</li>
+                    </ol>
+                </nav>
+                <h3 class="fw-bold mb-0" style="letter-spacing: -0.5px;">Create New Route</h3>
+                <p class="text-muted small mb-0">Define a new bus route, schedule duration, and manage stops.</p>
+            </div>
+
+            <div class="d-flex gap-2">
+                <a href="/Admin/Route" class="btn btn-link text-decoration-none text-dark fw-bold btn-sm">Cancel</a>
+                <button id="btnSaveRoute" class="btn btn-primary fw-bold px-3 py-2 shadow-sm rounded-3 btn-sm">
+                    <i class="fa-solid fa-save me-2"></i> Save Route
+                </button>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4 border">
+            <div class="card-header bg-white py-2">
+                <div class="fw-bold small d-flex align-items-center text-uppercase text-muted" style="letter-spacing: 0.5px;">
+                    <i class="fa-solid fa-circle-info me-2 text-primary"></i>
+                    General Information
+                </div>
+            </div>
+            <div class="card-body p-3">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label fw-bold text-secondary small">ROUTE NAME</label>
+                        <input type="text" id="txtRouteName" class="form-control" placeholder="e.g., NYC to Boston Express">
+                    </div>
+
+                    <div class="col-md-7">
+                        <label class="form-label fw-bold text-secondary small">ESTIMATED DURATION</label>
+                        <div class="d-flex gap-2">
+                            <div class="input-group input-group-sm">
+                                <input type="number" id="numHours" class="form-control" placeholder="0" min="0">
+                                <span class="input-group-text bg-light text-muted">Hrs</span>
+                            </div>
+                            <div class="input-group input-group-sm">
+                                <input type="number" id="numMinutes" class="form-control" placeholder="0" min="0" max="59">
+                                <span class="input-group-text bg-light text-muted">Mins</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold text-secondary small">ROUTE TYPE</label>
+                        <select id="selRouteType" class="form-select form-select-sm">
+                            <option value="Express" selected>Express</option>
+                            <option value="Standard">Standard</option>
+                            <option value="Overnight">Overnight</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border">
+            <div class="card-header bg-white py-2 d-flex justify-content-between align-items-center">
+                <div class="fw-bold small d-flex align-items-center text-uppercase text-muted" style="letter-spacing: 0.5px;">
+                    <i class="fa-solid fa-location-dot me-2 text-primary"></i>
+                    Route Stops
+                </div>
+                <span id="lblStopCount" class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-2">3 Stops Added</span>
+            </div>
+
+            <div class="card-body p-3">
+                <p class="text-muted mb-3" style="font-size: 0.8rem;">Drag and drop stops to reorder. Ensure the first stop is the origin.</p>
+
+                <div id="stopsContainer">
+                    <div id="emptyState" class="text-center py-4 text-muted">
+                        <i class="fa-solid fa-map-location-dot fa-2x mb-2"></i>
+                        <p>No stops added yet. Click the button below to start.</p>
+                    </div>
+                </div>
+
+                <button id="btnAddStop" class="btn btn-add-stop w-100 py-2 fw-bold">
+                    <i class="fa-solid fa-plus-circle me-1"></i> Add Stop
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    // Logic JS để Save Route
+    document.getElementById('btnSaveRoute').addEventListener('click', async function () {
+        const btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+
+        const payload = {
+            name: document.getElementById('txtRouteName').value,
+            hours: parseInt(document.getElementById('numHours').value) || 0,
+            minutes: parseInt(document.getElementById('numMinutes').value) || 0,
+            stops: []
+        };
+
+        // Quét toàn bộ trạm dừng trong container
+        const stopRows = document.querySelectorAll('#stopsContainer .stop-item');
+        stopRows.forEach((row, index) => {
+            payload.stops.push({
+                locationName: row.querySelector('.input-location').value,
+                time: row.querySelector('.input-time').value,
+                stopOrder: index + 1,
+                stopType: parseInt(row.getAttribute('data-stop-type'))
+            });
+        });
+
+        try {
+            const response = await fetch('/Admin/Route/Create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                window.location.href = '/Admin/Route'; // Thành công thì chuyển hướng
+            } else {
+                alert('Failed to save route. Please check data.');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-save me-2"></i> Save Route';
+            }
+        } catch (error) {
+            console.error(error);
+            btn.disabled = false;
+        }
+    });
+</script>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // === 1. KHAI BÁO CÁC PHẦN TỬ ===
+        const stopsContainer = document.getElementById('stopsContainer');
+        const btnAddStop = document.getElementById('btnAddStop');
+        const lblStopCount = document.getElementById('lblStopCount');
+        const emptyState = document.getElementById('emptyState');
+        const btnSaveRoute = document.getElementById('btnSaveRoute');
+
+        // === 2. HÀM CẬP NHẬT GIAO DIỆN (Đếm số, Đánh dấu loại trạm) ===
+        function updateUI() {
+            const stops = stopsContainer.querySelectorAll('.stop-item');
+            const totalStops = stops.length;
+
+            // Cập nhật Badge số lượng (Xử lý trường hợp 0, 1 hoặc nhiều trạm)
+            if (lblStopCount) {
+                lblStopCount.textContent = `${totalStops} ${totalStops === 1 ? 'Stop' : 'Stops'} Added`;
+            }
+
+            // Ẩn/Hiện trạng thái trống
+            if (totalStops > 0) {
+                if (emptyState) emptyState.style.display = 'none';
+            } else {
+                if (emptyState) emptyState.style.display = 'block';
+            }
+
+            // Đánh số thứ tự và phân loại loại trạm (1: Đầu, 2: Giữa, 3: Cuối)
+            stops.forEach((stop, index) => {
+                // Cập nhật số thứ tự hiển thị
+                const numDisplay = stop.querySelector('.stop-number');
+                if (numDisplay) numDisplay.textContent = index + 1;
+
+                // Reset CSS border mặc định
+                stop.classList.remove('border-start', 'border-primary', 'border-4');
+
+                if (index === 0) {
+                    // Trạm đầu tiên
+                    stop.setAttribute('data-stop-type', '1');
+                } else if (index === totalStops - 1) {
+                    // Trạm cuối cùng (chỉ áp dụng nếu có từ 2 trạm trở lên)
+                    stop.setAttribute('data-stop-type', '3');
+                    stop.classList.add('border-start', 'border-primary', 'border-4');
+                } else {
+                    // Các trạm ở giữa
+                    stop.setAttribute('data-stop-type', '2');
+                }
+            });
+        }
+
+        // === 3. LOGIC THÊM TRẠM DỪNG (POPUP) ===
+        btnAddStop.addEventListener('click', async function () {
+            const { value: formValues } = await Swal.fire({
+                title: 'Add New Stop',
+                html:
+                    '<div class="text-start">' +
+                    '<label class="swal2-label fw-bold small text-muted">LOCATION NAME</label>' +
+                    '<input id="swal-input1" class="swal2-input mt-1" placeholder="e.g. Philadelphia, PA">' +
+                    '<label class="swal2-label fw-bold small text-muted mt-3">ARRIVAL/DEPARTURE TIME</label>' +
+                    '<input id="swal-input2" type="time" class="swal2-input mt-1">' +
+                    '</div>',
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonText: 'Add Stop',
+                cancelButtonText: 'Cancel',
+                customClass: {
+                    confirmButton: 'btn btn-primary px-4',
+                    cancelButton: 'btn btn-link text-muted'
+                },
+                buttonsStyling: false,
+                preConfirm: () => {
+                    const loc = document.getElementById('swal-input1').value;
+                    const time = document.getElementById('swal-input2').value;
+                    if (!loc || !time) {
+                        Swal.showValidationMessage('Please enter both location and time');
+                    }
+                    return { location: loc, time: time };
+                }
+            });
+
+            if (formValues) {
+                addStopToUI(formValues.location, formValues.time);
+            }
+        });
+
+        function addStopToUI(location, time) {
+            const stopHtml = `
+                <div class="stop-item p-3 mb-2 d-flex align-items-center gap-3 bg-white shadow-sm border rounded">
+                    <i class="fa-solid fa-grip-vertical text-muted opacity-50"></i>
+                    <div class="stop-number"></div>
+                    <div class="flex-grow-1">
+                        <input class="form-control form-control-sm border-0 bg-light input-location" value="${location}">
+                    </div>
+                    <div style="width:120px">
+                        <input type="time" class="form-control form-control-sm border-0 bg-light input-time" value="${time}">
+                    </div>
+                    <button class="btn btn-link text-danger p-0 btn-remove-stop" title="Remove stop">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            `;
+
+            const stops = stopsContainer.querySelectorAll('.stop-item');
+            // Logic chèn: Nếu đã có Destination (trạm cuối), chèn vào TRƯỚC nó. Ngược lại chèn cuối.
+            if (stops.length >= 2) {
+                stops[stops.length - 1].insertAdjacentHTML('beforebegin', stopHtml);
+            } else {
+                stopsContainer.insertAdjacentHTML('beforeend', stopHtml);
+            }
+
+            updateUI();
+        }
+
+        // === 4. XỬ LÝ XÓA TRẠM ===
+        stopsContainer.addEventListener('click', function (e) {
+            if (e.target.closest('.btn-remove-stop')) {
+                const item = e.target.closest('.stop-item');
+                item.style.opacity = '0';
+                item.style.transform = 'translateX(20px)';
+                item.style.transition = 'all 0.3s';
+
+                setTimeout(() => {
+                    item.remove();
+                    updateUI();
+                }, 300);
+            }
+        });
+
+        // === 5. LOGIC LƯU DỮ LIỆU (SAVE ROUTE) ===
+        btnSaveRoute.addEventListener('click', async function () {
+            const stops = stopsContainer.querySelectorAll('.stop-item');
+
+            // Validation cơ bản
+            if (stops.length < 2) {
+                Swal.fire('Error', 'A route must have at least an origin and a destination.', 'error');
+                return;
+            }
+
+            const btn = this;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+
+            const payload = {
+                name: document.getElementById('txtRouteName').value,
+                hours: parseInt(document.getElementById('numHours').value) || 0,
+                minutes: parseInt(document.getElementById('numMinutes').value) || 0,
+                type: document.getElementById('selRouteType').value,
+                stops: Array.from(stops).map((row, index) => ({
+                    locationName: row.querySelector('.input-location').value,
+                    time: row.querySelector('.input-time').value,
+                    stopOrder: index + 1,
+                    stopType: parseInt(row.getAttribute('data-stop-type'))
+                }))
+            };
+
+            try {
+                const response = await fetch('/Admin/Route/Create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Saved!',
+                        text: 'Route created successfully.',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = '/Admin/Route';
+                    });
+                } else {
+                    throw new Error('Server error');
+                }
+            } catch (error) {
+                Swal.fire('Failed', 'Could not save the route. Please try again.', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-save me-2"></i> Save Route';
+            }
+        });
+
+        // KHỞI TẠO BAN ĐẦU
+        updateUI();
+    });
+</script>

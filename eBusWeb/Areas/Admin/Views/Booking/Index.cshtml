@@ -1,0 +1,510 @@
+﻿@model IEnumerable<eBusWeb.Models.Booking>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Management</title>
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+          prefix: 'tw-',
+          corePlugins: { preflight: false }, // giữ nguyên style layout cũ
+          theme: { extend: {} }
+        }
+    </script>
+
+    <!-- Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+
+    <style>
+        body {
+            background-color: #F8FAFC;
+            color: #1E293B;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+            font-size: 20px;
+        }
+
+        .stat-card {
+            border: 1px solid #F1F5F9;
+            transition: all 0.2s;
+        }
+
+            .stat-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+            }
+    </style>
+</head>
+<body>
+
+    <!-- Wrapper scope Tailwind -->
+    <div class="tw-p-8 tw-max-w-7xl tw-mx-auto">
+
+        <!-- Breadcrumb -->
+        <nav class="tw-mb-6" aria-label="breadcrumb">
+            <ol class="tw-flex tw-items-center tw-text-sm tw-text-slate-600 tw-bg-white tw-px-3 tw-py-2 tw-rounded-lg tw-shadow-sm tw-gap-2 tw-list-none">
+                <!-- Dashboard link -->
+                <li class="tw-flex tw-items-center tw-gap-1">
+                    <span class="material-symbols-outlined tw-text-[18px]">home</span>
+                    <a href="/Admin/Dashboard" class="tw-no-underline hover:tw-text-blue-600">Dashboard</a>
+                </li>
+
+                <!-- Separator -->
+                <li>
+                    <span class="tw-text-slate-300">/</span>
+                </li>
+
+                <!-- Current page -->
+                <li class="tw-flex tw-items-center tw-gap-1 tw-font-semibold tw-text-slate-700">
+                    <span class="material-symbols-outlined tw-text-[16px]">bookmark</span>
+                    Booking Management
+                </li>
+            </ol>
+        </nav>
+        <div class="tw-flex tw-justify-end tw-items-center tw-mb-6">
+            <a href="/Admin/Booking/Create"
+               class="tw-no-underline tw-inline-flex tw-items-center tw-gap-2 tw-bg-blue-600 hover:tw-bg-blue-700 tw-text-white tw-px-5 tw-py-2.5 tw-rounded-xl tw-font-semibold tw-text-sm tw-shadow-lg tw-shadow-blue-200 tw-transition-all active:tw-scale-95">
+                <span class="material-symbols-outlined tw-text-[20px]">add_circle</span>
+                Create booking
+            </a>
+        </div>
+        <!-- Stats Cards -->
+        <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-4 tw-gap-4 tw-mb-8">
+
+            <!-- Total Bookings -->
+            <div class="stat-card tw-bg-white tw-p-5 tw-rounded-2xl tw-flex tw-flex-col tw-justify-between">
+                <div class="tw-flex tw-justify-between">
+                    <div>
+                        <p class="tw-text-slate-500 tw-text-sm tw-font-medium">Total Bookings</p>
+                        <h3 class="tw-text-[28px] tw-font-bold tw-mt-1">@ViewBag.TotalBookings</h3>
+                    </div>
+                    <div class="tw-w-10 tw-h-10 tw-bg-blue-50 tw-rounded-full tw-flex tw-items-center tw-justify-center">
+                        <span class="material-symbols-outlined tw-text-blue-600">confirmation_number</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Revenue Today -->
+            <div class="stat-card tw-bg-white tw-p-5 tw-rounded-2xl tw-flex tw-flex-col tw-justify-between">
+                <div class="tw-flex tw-justify-between">
+                    <div>
+                        <p class="tw-text-slate-500 tw-text-sm tw-font-medium">Revenue</p>
+                        <h3 class="tw-text-[28px] tw-font-bold tw-mt-1 tw-whitespace-nowrap">
+                            @{
+                                double revenue = ViewBag.RevenueToday;
+                                string displayRevenue;
+
+                                if (revenue >= 1_000_000_000)
+                                    displayRevenue = $"{revenue / 1_000_000_000:N2}T ₫";
+                                else if (revenue >= 1_000_000)
+                                    displayRevenue = $"{revenue / 1_000_000:N2}M ₫";
+                                else if (revenue >= 1_000)
+                                    displayRevenue = $"{revenue / 1_000:N2}K ₫";
+                                else
+                                    displayRevenue = $"{revenue:N0} ₫";
+                            }
+                            @displayRevenue
+                        </h3>
+                    </div>
+                    <div class="tw-w-10 tw-h-10 tw-bg-emerald-50 tw-rounded-full tw-flex tw-items-center tw-justify-center">
+                        <span class="material-symbols-outlined tw-text-emerald-600">payments</span>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Pending -->
+            <div class="stat-card tw-bg-white tw-p-5 tw-rounded-2xl tw-flex tw-flex-col tw-justify-between">
+                <div class="tw-flex tw-justify-between">
+                    <div>
+                        <p class="tw-text-slate-500 tw-text-sm tw-font-medium">Pending</p>
+                        <h3 class="tw-text-[28px] tw-font-bold tw-mt-1">@ViewBag.PendingCount</h3>
+                    </div>
+                    <div class="tw-w-10 tw-h-10 tw-bg-orange-50 tw-rounded-full tw-flex tw-items-center tw-justify-center">
+                        <span class="material-symbols-outlined tw-text-orange-600">pending_actions</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seats Sold -->
+            <div class="stat-card tw-bg-white tw-p-5 tw-rounded-2xl tw-flex tw-flex-col tw-justify-between">
+                <div class="tw-flex tw-justify-between">
+                    <div>
+                        <p class="tw-text-slate-500 tw-text-sm tw-font-medium">Seats Sold</p>
+                        <h3 class="tw-text-[28px] tw-font-bold tw-mt-1">@ViewBag.SeatsSold</h3>
+                    </div>
+                    <div class="tw-w-10 tw-h-10 tw-bg-purple-50 tw-rounded-full tw-flex tw-items-center tw-justify-center">
+                        <span class="material-symbols-outlined tw-text-purple-600">event_seat</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- Table Example -->
+        <div class="tw-bg-white tw-rounded-2xl tw-border tw-border-slate-100 tw-shadow-sm tw-overflow-hidden">
+            <table class="tw-w-full tw-border-collapse">
+                <thead>
+                    <tr class="tw-bg-[#F8FAFC] tw-border-b tw-border-slate-100">
+                        <th class="tw-px-6 tw-py-4 tw-text-left tw-text-[11px] tw-font-bold tw-text-slate-400 tw-uppercase tw-tracking-wider">Booking ID</th>
+                        <th class="tw-px-6 tw-py-4 tw-text-left tw-text-[11px] tw-font-bold tw-text-slate-400 tw-uppercase tw-tracking-wider">Contact / User</th>
+                        <th class="tw-px-6 tw-py-4 tw-text-left tw-text-[11px] tw-font-bold tw-text-slate-400 tw-uppercase tw-tracking-wider">Trip & Route</th>
+                        <th class="tw-px-6 tw-py-4 tw-text-left tw-text-[11px] tw-font-bold tw-text-slate-400 tw-uppercase tw-tracking-wider">Amount</th>
+                        <th class="tw-px-6 tw-py-4 tw-text-left tw-text-[11px] tw-font-bold tw-text-slate-400 tw-uppercase tw-tracking-wider">Status</th>
+                        <th class="tw-px-6 tw-py-4"></th>
+                    </tr>
+                </thead>
+                <tbody class="tw-divide-y tw-divide-slate-50">
+                    @foreach (var booking in Model)
+                    {
+                        <tr class="hover:tw-bg-slate-50/50 tw-transition-colors">
+                            <td class="tw-px-6 tw-py-5">#BK-@booking.Id</td>
+                            <td class="tw-px-6 tw-py-5">
+                                @booking.ContactName <br />
+                                <span class="tw-text-slate-400">@booking.ContactMobile</span>
+                            </td>
+                            <td class="tw-px-6 tw-py-5">@booking.PickupStopId → @booking.DropoffStopId</td>
+                            <td class="tw-px-6 tw-py-5">
+                                @{
+                                    double amount = booking.TotalAmount;
+                                    string displayAmount;
+
+                                    if (amount >= 1_000_000_000)
+                                        displayAmount = $"{amount / 1_000_000_000:N2}T ₫";
+                                    else if (amount >= 1_000_000)
+                                        displayAmount = $"{amount / 1_000_000:N2}M ₫";
+                                    else if (amount >= 1_000)
+                                        displayAmount = $"{amount / 1_000:N2}K ₫";
+                                    else
+                                        displayAmount = $"{amount:N0} ₫";
+                                }
+                                @displayAmount
+                            </td>
+
+                            <td class="tw-px-6 tw-py-5">
+                                @{
+                                    string statusText = booking.BookingStatus switch
+                                    {
+                                        0 => "Pending",
+                                        1 => "Confirmed",
+                                        2 => "Cancelled",
+                                        _ => "Unknown"
+                                    };
+                                    string statusColor = booking.BookingStatus switch
+                                    {
+                                        0 => "tw-bg-orange-50 tw-text-orange-600",
+                                        1 => "tw-bg-emerald-50 tw-text-emerald-600",
+                                        2 => "tw-bg-rose-50 tw-text-rose-600",
+                                        _ => "tw-bg-slate-50 tw-text-slate-600"
+                                    };
+                                }
+                                <span class="@statusColor tw-px-2 tw-py-1 tw-rounded-full tw-text-[11px] tw-font-bold">@statusText</span>
+                            </td>
+                            <td class="tw-px-6 tw-py-5">
+                                <div class="tw-flex tw-gap-2 tw-justify-end">
+                                    <button title="View"
+                                            data-id="@booking.Id"
+                                            class="view-booking-btn tw-bg-blue-50 tw-text-blue-600 tw-p-2 tw-rounded-full hover:tw-bg-blue-100 hover:tw-shadow-md tw-transition tw-outline-none tw-border-none">
+                                        <span class="material-symbols-outlined tw-text-[18px]">visibility</span>
+                                    </button>
+                                    <a href="@Url.Action("Edit", "Booking", new { id = booking.Id })"
+                                       title="Edit"
+                                       class="tw-bg-amber-50 tw-text-amber-600 tw-p-2 tw-rounded-full hover:tw-bg-amber-100 hover:tw-shadow-md tw-transition tw-outline-none tw-border-none focus:tw-ring-0 active:tw-ring-0 active:tw-shadow-none">
+                                        <span class="material-symbols-outlined tw-text-[18px]">edit</span>
+                                    </a>
+
+                                    <button title="Delete"
+                                            data-id="@booking.Id"
+                                            data-passenger="@booking.ContactName"
+                                            data-route="@booking.PickupStopId → @booking.DropoffStopId"
+                                            data-departure="@booking.CreatedAt"
+                                            class="delete-booking-btn tw-bg-rose-50 tw-text-rose-600 tw-p-2 tw-rounded-full hover:tw-bg-rose-100 hover:tw-shadow-md tw-transition tw-outline-none tw-border-none focus:tw-ring-0 active:tw-ring-0 active:tw-shadow-none">
+                                        <span class="material-symbols-outlined tw-text-[18px]">delete</span>
+                                    </button>
+
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+
+            </table>
+        </div>
+        <div class="tw-flex tw-justify-end tw-mt-4 tw-gap-2">
+            <!-- Previous button -->
+            <a href="@Url.Action("Index", new { page = (ViewBag.CurrentPage > 1 ? ViewBag.CurrentPage - 1 : 1) })"
+               class="tw-no-underline tw-px-3 tw-py-1 tw-rounded-md tw-border tw-border-blue-200 tw-bg-white tw-text-blue-600 hover:tw-bg-blue-50 @(ViewBag.CurrentPage == 1 ? "tw-opacity-50 tw-cursor-not-allowed" : "")">
+                Previous
+            </a>
+
+            <!-- Next button -->
+            <a href="@Url.Action("Index", new { page = (ViewBag.CurrentPage < ViewBag.TotalPages ? ViewBag.CurrentPage + 1 : ViewBag.TotalPages) })"
+               class="tw-no-underline tw-px-3 tw-py-1 tw-rounded-md tw-border tw-border-blue-200 tw-bg-white tw-text-blue-600 hover:tw-bg-blue-50 @(ViewBag.CurrentPage == ViewBag.TotalPages ? "tw-opacity-50 tw-cursor-not-allowed" : "")">
+                Next
+            </a>
+        </div>
+
+
+
+
+    </div>
+    <div id="bookingModalDelete" class="tw-fixed tw-inset-0 tw-bg-black/50 tw-flex tw-items-center tw-justify-center tw-p-4 tw-hidden tw-z-[100] tw-backdrop-blur-sm">
+        <div class="tw-bg-white tw-rounded-2xl tw-shadow-2xl tw-max-w-md tw-w-full tw-relative tw-border tw-border-slate-100 tw-overflow-hidden tw-animate-in tw-fade-in tw-zoom-in tw-duration-200">
+
+            <div class="tw-p-6 tw-text-center">
+                <div class="tw-w-16 tw-h-16 tw-bg-red-50 tw-rounded-full tw-flex tw-items-center tw-justify-center tw-mx-auto tw-mb-4">
+                    <span class="material-symbols-outlined tw-text-red-600 tw-text-[32px]">warning</span>
+                </div>
+                <h3 class="tw-text-xl tw-font-bold tw-text-slate-900">Xác nhận xóa đặt chỗ</h3>
+                <p id="deleteMessage" class="tw-text-slate-500 tw-mt-2 tw-text-sm">
+                    Bạn có chắc chắn muốn xóa mã đặt chỗ này? Hành động này không thể hoàn tác.
+                </p>
+            </div>
+
+            <div class="tw-px-6 tw-pb-6">
+                <div class="tw-bg-slate-50 tw-rounded-xl tw-p-4 tw-border tw-border-slate-100 tw-space-y-3 tw-text-sm">
+                    <div class="tw-flex tw-justify-between">
+                        <span class="tw-text-slate-500">Mã đặt chỗ:</span>
+                        <span id="delId" class="tw-font-bold tw-text-slate-900">#BK-000</span>
+                    </div>
+                    <div class="tw-flex tw-justify-between">
+                        <span class="tw-text-slate-500">Hành khách:</span>
+                        <span id="delPassenger" class="tw-font-semibold tw-text-slate-900">-</span>
+                    </div>
+                    <div class="tw-flex tw-justify-between">
+                        <span class="tw-text-slate-500">Lộ trình:</span>
+                        <span id="delRoute" class="tw-text-slate-900">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tw-bg-slate-50 tw-px-6 tw-py-4 tw-flex tw-gap-3 tw-justify-end">
+                <button id="closeDeleteBtn" class="tw-px-4 tw-py-2 tw-text-sm tw-font-semibold tw-text-slate-600 hover:tw-bg-slate-200 tw-rounded-lg tw-transition-colors tw-border-none tw-bg-transparent">
+                    Hủy bỏ
+                </button>
+                <button id="confirmDeleteBtn" class="tw-bg-red-600 hover:tw-bg-red-700 tw-text-white tw-px-6 tw-py-2 tw-rounded-lg tw-text-sm tw-font-semibold tw-flex tw-items-center tw-gap-2 tw-shadow-lg tw-shadow-red-200 tw-transition-all tw-border-none">
+                    <span class="material-symbols-outlined tw-text-[18px]">delete_forever</span>
+                    Xác nhận xóa
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+<!-- Booking Details Modal -->
+<div id="bookingModal" class="tw-fixed tw-inset-0 tw-z-50 tw-flex tw-items-center tw-justify-center tw-bg-black/40 tw-hidden">
+    <div class="tw-bg-white tw-rounded-xl tw-w-[600px] tw-max-w-full tw-p-6 tw-relative">
+        <button id="closeModal"
+                class="tw-absolute tw-top-4 tw-right-4 tw-text-slate-500 hover:tw-text-slate-700 tw-bg-transparent tw-border-0 focus:tw-outline-none">
+            <span class="material-symbols-outlined tw-text-[24px]">close</span>
+        </button>
+
+        <h3 class="tw-text-lg tw-font-semibold tw-mb-4">Booking Details</h3>
+        <div id="modalContent" class="tw-text-sm tw-text-slate-700">
+            <!-- Nội dung sẽ được inject bằng JS -->
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const modal = document.getElementById("bookingModal");
+        const modalContent = document.getElementById("modalContent");
+        const closeModal = document.getElementById("closeModal");
+
+        // Hàm mở modal với hiệu ứng
+        function openModal() {
+            modal.classList.remove("tw-hidden");
+            modalContent.classList.remove("tw-scale-90", "tw-opacity-0");
+            modalContent.classList.add("tw-scale-100", "tw-opacity-100");
+        }
+
+        // Hàm đóng modal
+        function hideModal() {
+            modalContent.classList.remove("tw-scale-100", "tw-opacity-100");
+            modalContent.classList.add("tw-scale-90", "tw-opacity-0");
+            setTimeout(() => {
+                modal.classList.add("tw-hidden");
+                modalContent.innerHTML = ""; // Clear nội dung
+            }, 200); // Khớp duration animation
+        }
+
+        // Đóng modal khi bấm nút X
+        closeModal.addEventListener("click", hideModal);
+
+        // Đóng modal khi bấm ra ngoài
+        modal.addEventListener("click", (e) => {
+            if (e.target === modal) hideModal();
+        });
+
+        // Xử lý click nút View
+        document.querySelectorAll(".view-booking-btn").forEach(button => {
+            button.addEventListener("click", async () => {
+                const bookingId = button.getAttribute("data-id");
+
+                // Mở modal và hiển thị loading spinner
+                openModal();
+                modalContent.innerHTML = `
+                    <div class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-py-10">
+                        <div class="tw-animate-spin tw-border-4 tw-border-t-blue-500 tw-border-slate-200 tw-rounded-full tw-w-12 tw-h-12"></div>
+                        <p class="tw-mt-4 tw-text-slate-400 tw-font-medium">Đang tải dữ liệu...</p>
+                    </div>
+                `;
+
+                try {
+                    const res = await fetch(`/Admin/Booking/Details?bookingId=${bookingId}`);
+                    if (!res.ok) throw new Error('Server error ' + res.status);
+                    const data = await res.json();
+
+                    if (data.success) {
+                        const passengersHtml = data.passengers && data.passengers.length > 0
+                            ? data.passengers.map(p => `
+                                <tr class="tw-border-b last:tw-border-none">
+                                    <td class="tw-py-2 tw-px-3 tw-font-medium">${p.fullName}</td>
+                                    <td class="tw-py-2 tw-px-3 tw-text-blue-600">Ghế: ${p.seatNumber}</td>
+                                </tr>
+                            `).join("")
+                            : `<tr><td colspan="2" class="tw-text-center tw-py-4 tw-text-slate-400">Không có thông tin hành khách</td></tr>`;
+
+                        modalContent.innerHTML = `
+                            <div class="tw-space-y-6">
+                                <div class="tw-grid tw-grid-cols-2 tw-gap-4">
+                                    <div>
+                                        <p class="tw-text-xs tw-uppercase tw-font-bold tw-text-slate-400">Mã đặt chỗ</p>
+                                        <p class="tw-font-semibold">#BK-${data.bookingId}</p>
+                                    </div>
+                                    <div>
+                                        <p class="tw-text-xs tw-uppercase tw-font-bold tw-text-slate-400">Người liên hệ</p>
+                                        <p class="tw-font-semibold">${data.bookingContactName}</p>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <p class="tw-text-xs tw-uppercase tw-font-bold tw-text-slate-400">Tài khoản đặt</p>
+                                    <p class="tw-font-semibold">${data.user ? data.user.fullName : "Khách vãng lai (Guest)"}</p>
+                                </div>
+
+                                <div>
+                                    <p class="tw-text-xs tw-uppercase tw-font-bold tw-text-slate-400 tw-mb-2">Danh sách hành khách</p>
+                                    <table class="tw-w-full tw-text-left tw-border tw-border-slate-200 tw-rounded-lg tw-overflow-hidden">
+                                        <thead class="tw-bg-slate-50">
+                                            <tr>
+                                                <th class="tw-py-2 tw-px-3 tw-font-medium">Hành khách</th>
+                                                <th class="tw-py-2 tw-px-3 tw-font-medium">Ghế</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${passengersHtml}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        modalContent.innerHTML = `<p class="tw-text-rose-500 tw-text-center tw-py-10">${data.message}</p>`;
+                    }
+                } catch (err) {
+                    console.error("Fetch error:", err);
+                    modalContent.innerHTML = `<p class="tw-text-rose-500 tw-text-center tw-py-10">Không thể kết nối đến máy chủ.</p>`;
+                }
+            });
+        });
+    });
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Lấy đúng ID từ HTML của bạn (Lưu ý chữ Hoa/Thường)
+        const deleteModal = document.getElementById("bookingModalDelete");
+        const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+        const closeDeleteBtn = document.getElementById("closeDeleteBtn");
+
+        let currentBookingId = null;
+
+        // Hàm đóng/mở Modal
+        const toggleDeleteModal = (show = true) => {
+            if (show) {
+                deleteModal.classList.remove("tw-hidden");
+            } else {
+                deleteModal.classList.add("tw-hidden");
+                currentBookingId = null;
+            }
+        };
+
+        // Gán sự kiện cho các nút đóng
+        [closeDeleteBtn, deleteModal].forEach(el => {
+            if (el) {
+                el.addEventListener("click", (e) => {
+                    // Chỉ đóng khi bấm vào nút Hủy hoặc bấm ra ngoài vùng xám (backdrop)
+                    if (e.target === closeDeleteBtn || e.target === deleteModal) {
+                        toggleDeleteModal(false);
+                    }
+                });
+            }
+        });
+
+        // Xử lý khi click nút Delete trong bảng
+        document.querySelectorAll(".delete-booking-btn").forEach(btn => {
+            btn.addEventListener("click", function() {
+                // Lấy dữ liệu từ data-attributes
+                currentBookingId = this.dataset.id;
+                const passenger = this.dataset.passenger || "N/A";
+                const route = this.dataset.route || "N/A";
+
+                // Đổ dữ liệu vào Modal (Dựa trên ID có sẵn trong HTML của bạn)
+                document.getElementById("delId").textContent = `#BK-${currentBookingId}`;
+                document.getElementById("delPassenger").textContent = passenger;
+                document.getElementById("delRoute").textContent = route;
+
+                // Cập nhật câu thông báo (nếu có p#deleteMessage)
+                const msg = document.getElementById("deleteMessage");
+                if(msg) {
+                    msg.innerHTML = `Bạn có chắc chắn muốn xóa đặt chỗ <span class="tw-font-bold tw-text-red-600">#BK-${currentBookingId}</span> của <strong>${passenger}</strong>?`;
+                }
+
+                toggleDeleteModal(true);
+            });
+        });
+
+        // Xử lý xác nhận xóa (Gửi API)
+        confirmDeleteBtn.addEventListener("click", async function() {
+            if (!currentBookingId) return;
+
+            // Hiệu ứng loading trên nút
+            const originalContent = this.innerHTML;
+            this.disabled = true;
+            this.innerHTML = `<span class="tw-animate-spin tw-inline-block tw-w-4 tw-h-4 tw-border-2 tw-border-white tw-border-t-transparent tw-rounded-full"></span> Đang xóa...`;
+
+            try {
+                // Gọi tới Action Delete trong Controller
+                const res = await fetch(`/Admin/Booking/Delete?bookingId=${currentBookingId}`, {
+                    method: "POST"
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    toggleDeleteModal(false);
+                    // Reload lại trang để cập nhật danh sách
+                    window.location.reload();
+                } else {
+                    alert("Lỗi: " + (data.message || "Không thể xóa."));
+                    this.disabled = false;
+                    this.innerHTML = originalContent;
+                }
+            } catch (err) {
+                console.error("Fetch error:", err);
+                alert("Không thể kết nối đến máy chủ");
+                this.disabled = false;
+                this.innerHTML = originalContent;
+            }
+        });
+    });
+</script>

@@ -1,0 +1,212 @@
+﻿
+
+@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="container-fluid py-4">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-speedometer2 text-primary me-2"></i>
+                Admin Dashboard
+            </h2>
+            <p class="text-muted mb-0">Overview of system performance & daily operations</p>
+        </div>
+        <a href="/Admin/Dashboard/ExportPdf"
+           class="btn btn-outline-primary btn-sm shadow-sm">
+            <i class="bi bi-download me-1"></i> Export Report
+        </a>
+
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="row g-3 mb-4">
+
+        <!-- Total Revenue -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted small fw-semibold">TOTAL REVENUE</span>
+                        <i class="bi bi-currency-dollar text-primary fs-4"></i>
+                    </div>
+                    <h3 class="fw-bold mt-2">$@Model.TotalRevenue</h3>
+                    <span class="text-success small fw-semibold">
+                        <i class="bi bi-arrow-up-right"></i>
+                        @Model.RevenueGrowthPercent% this month
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Bookings -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted small fw-semibold">TOTAL BOOKINGS</span>
+                        <i class="bi bi-ticket-perforated text-primary fs-4"></i>
+                    </div>
+                    <h3 class="fw-bold mt-2">@Model.TotalBookings</h3>
+                    <span class="text-success small fw-semibold">
+                        <i class="bi bi-arrow-up-right"></i>
+                        @Model.BookingGrowthPercent% this week
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Routes -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted small fw-semibold">ACTIVE ROUTES</span>
+                        <i class="bi bi-map text-primary fs-4"></i>
+                    </div>
+                    <h3 class="fw-bold mt-2">@Model.ActiveRoutes</h3>
+                    <span class="text-muted small">No changes</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Payments -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted small fw-semibold">PENDING PAYMENTS</span>
+                        <i class="bi bi-exclamation-circle text-warning fs-4"></i>
+                    </div>
+                    <h3 class="fw-bold mt-2">$@Model.PendingPayments</h3>
+                    <span class="text-warning small fw-semibold">Action required</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-3">
+            <a href="/Admin/Route/Create"
+               class="btn btn-primary w-100 py-3 shadow-sm quick-action text-decoration-none
+                  d-flex flex-column align-items-center justify-content-center gap-1">
+                <i class="bi bi-plus-circle fs-4"></i>
+                <strong class="small">Add Route</strong>
+                <small class="opacity-75">Create new route</small>
+            </a>
+        </div>
+
+        <div class="col-md-3">
+            <button class="btn btn-white w-100 py-3 shadow-sm border quick-action
+                   d-flex flex-column align-items-center justify-content-center gap-1">
+                <i class="bi bi-clock-history text-primary fs-4"></i>
+                <strong class="small">Schedule Trip</strong>
+                <small class="text-muted">Manage schedules</small>
+            </button>
+        </div>
+
+        <div class="col-md-3">
+            <button class="btn btn-white w-100 py-3 shadow-sm border quick-action
+                   d-flex flex-column align-items-center justify-content-center gap-1">
+                <i class="bi bi-shield-check text-primary fs-4"></i>
+                <strong class="small">Verify User</strong>
+                <small class="text-muted">User validation</small>
+            </button>
+        </div>
+
+        <div class="col-md-3">
+            <button class="btn btn-white w-100 py-3 shadow-sm border quick-action
+                   d-flex flex-column align-items-center justify-content-center gap-1">
+                <i class="bi bi-search text-primary fs-4"></i>
+                <strong class="small">Manage Bookings</strong>
+                <small class="text-muted">Search & update</small>
+            </button>
+        </div>
+
+    </div>
+
+
+    <!-- Charts & Table -->
+    <div class="row g-4">
+
+        <!-- Route Popularity -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-1">Route Popularity</h6>
+                    <p class="text-muted small mb-4">Top routes</p>
+
+                    <div class="d-flex align-items-end justify-content-between chart-simple" style="height:160px">
+                        @foreach (var route in Model.RoutePopularities)
+                        {
+                            var height = Math.Min(route.BookingCount, 100);
+                            <span style="height:@height%"></span>
+                        }
+                    </div>
+
+                    <div class="d-flex justify-content-between small text-muted mt-2">
+                        @foreach (var route in Model.RoutePopularities)
+                        {
+                            <span>@route.RouteName</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Bookings -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 d-flex justify-content-between">
+                    <h6 class="fw-bold mb-0">Recent Bookings</h6>
+                    <a href="/Admin/Booking" class="small text-decoration-none">View all</a>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table align-middle table-hover mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-3 small text-muted">BOOKING</th>
+                                <th class="small text-muted">PASSENGER</th>
+                                <th class="small text-muted">ROUTE</th>
+                                <th class="small text-muted">STATUS</th>
+                                <th class="text-end pe-3 small text-muted">AMOUNT</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var b in Model.RecentBookings)
+                            {
+                                <tr>
+                                    <td class="ps-3 fw-semibold">@b.BookingCode</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar me-2">@b.PassengerAvatar</div>
+                                            @b.PassengerName
+                                        </div>
+                                    </td>
+                                    <td>@b.Route</td>
+                                    <td>
+                                        <span class="badge
+                                                @(b.Status == "Confirmed" ? "bg-success-subtle text-success" :
+                                                                                            b.Status == "Pending" ? "bg-warning-subtle text-warning" :
+                                                                                            "bg-danger-subtle text-danger")">
+                                            @b.Status
+                                        </span>
+                                    </td>
+                                    <td class="text-end pe-3 fw-semibold">$@b.Amount</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>

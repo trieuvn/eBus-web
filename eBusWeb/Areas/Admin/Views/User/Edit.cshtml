@@ -1,0 +1,570 @@
+﻿@model eBusWeb.Models.User
+@{
+    ViewData["Title"] = "Edit User";
+    ViewData["Header"] = "Edit User";
+}
+
+<div class="container-fluid py-4">
+
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="/Admin/Dashboard" class="text-decoration-none text-muted">Dashboard</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="/Admin/User" class="text-decoration-none text-muted">User Management</a>
+            </li>
+            <li class="breadcrumb-item active text-primary fw-bold">Edit User</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-end mb-4">
+        <div>
+            <h1 class="h3 fw-bold mb-1">Edit User Profile</h1>
+            <p class="text-muted mb-0">
+                Update account details and permissions for
+                <span class="text-primary fw-semibold">@Model.FullName</span>.
+            </p>
+        </div>
+
+        <div class="user-meta-info text-end">
+            <div class="badge bg-blue-light text-primary p-2 px-3 rounded-pill mb-1">
+                USER ID: #@Model.Id.ToString().Substring(0, 8)
+            </div>
+        </div>
+    </div>
+    <div id="notifyArea" class="mt-3"></div>
+    <form asp-action="Edit" onsubmit="return false;" >
+        <input type="hidden" asp-for="Id" />
+
+        <div class="row g-4">
+
+            <div class="col-lg-8">
+
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+                        <h5 class="fw-bold mb-0">
+                            <i class="bi bi-person-vcard me-2 text-primary"></i>
+                            Personal Information
+                        </h5>
+                    </div>
+
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label class="form-label fw-semibold">Full Name</label>
+                                <input asp-for="FullName" id="inputFullName" value="@Model.FullName" class="form-control custom-input" placeholder="Enter full name" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Email Address</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0">
+                                        <i class="bi bi-envelope text-muted"></i>
+                                    </span>
+                                    <input value="@Model.Email" id="inputEmail" asp-for="Email" class="form-control custom-input border-start-0" placeholder="email@example.com" />
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Phone Number</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0">
+                                        <i class="bi bi-telephone text-muted"></i>
+                                    </span>
+                                    <input id="inputPhone" asp-for="PhoneNumber" value="@(Model.PhoneNumber ?? "")" class="form-control custom-input border-start-0" placeholder="+1 555-0123" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+                        <h5 class="fw-bold mb-0">
+                            <i class="bi bi-shield-check me-2 text-primary"></i>
+                            Permissions & Role
+                        </h5>
+                    </div>
+
+                    <div class="card-body p-4">
+                        <label class="form-label fw-semibold">Role Assignment</label>
+                        <select id="selectRole" asp-for="Role" class="form-select custom-input mb-2">
+                            <option value="0" selected="@(Model.Role == 0 ? "selected" : null)">Customer</option>
+                            <option value="1" selected="@(Model.Role == 1 ? "selected" : null)">Admin</option>
+                        </select>
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Changing role to <strong>Administrator</strong> grants full access to system settings.
+                        </small>
+                    </div>
+                </div>
+            </div> <div class="col-lg-4">
+
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-3">Security</h6>
+                        <p class="small text-muted">
+                            Change the user's password directly. The user will be required to use the new password on next login.
+                        </p>
+                        <button type="button"
+                                class="btn btn-outline-primary w-100 rounded-3 btn-change-password"
+                                data-id="@Model.Id">
+                            <i class="bi bi-key me-1"></i>
+                            Change Password
+                        </button>
+
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-4 border-start border-4 border-danger">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold text-danger mb-3">Danger Zone</h6>
+                        <p class="small text-muted">
+                            Permanently delete this user and remove all associated data.
+                        </p>
+                        <button type="button"
+                                class="btn btn-soft-danger w-100 rounded-3 btn-delete-edit"
+                                data-id="@Model.Id"
+                                data-name="@Model.FullName"
+                                data-email="@Model.Email">
+                            <i class="bi bi-trash3 me-1"></i>
+                            Delete User
+                        </button>
+
+                    </div>
+                </div>
+
+            </div>
+        </div> <div class="d-flex justify-content-end gap-3 mt-4 mb-5">
+            <a href="/Admin/User" class="btn btn-link text-decoration-none text-muted fw-semibold">
+                Cancel
+            </a>
+            <button type="button" onclick="updateUser()"
+                    class="btn btn-primary px-5 py-2 rounded-3 shadow-sm">
+                <i class="bi bi-check2-circle me-1"></i>
+                Save Changes
+            </button>
+
+        </div>
+    </form>
+</div>
+<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content delete-modal shadow rounded-4 border-0">
+
+            <div class="text-center pt-4">
+                <div class="danger-icon mx-auto">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                </div>
+            </div>
+
+            <div class="modal-body text-center px-4">
+                <h5 class="fw-bold mt-3">Delete User Account</h5>
+                <p class="text-muted small">
+                    You are about to permanently delete this user. This action cannot be undone.
+                </p>
+
+                <div class="target-user d-flex align-items-center gap-3 mt-4">
+                    <div class="avatar">
+                        <i class="bi bi-person"></i>
+                    </div>
+                    <div class="text-start">
+                        <div class="fw-semibold" id="deleteUserName"></div>
+                        <div class="text-muted small" id="deleteUserEmail"></div>
+                    </div>
+                </div>
+
+                <div class="alert alert-danger text-start small mt-3">
+                    <i class="bi bi-info-circle me-1"></i>
+                    All associated current and past records related to this account
+                    will be permanently removed.
+                </div>
+
+                <div class="text-start mt-3">
+                    <label class="small fw-semibold mb-1">
+                        Type <code>DELETE</code> to confirm
+                    </label>
+                    <input type="text"
+                           class="form-control delete-input"
+                           placeholder="DELETE"
+                           id="deleteConfirmInput">
+                </div>
+            </div>
+
+            <div class="modal-footer border-0 px-4 pb-4 d-flex">
+                <button class="btn btn-danger flex-fill me-2"
+                        id="confirmDeleteBtn"
+                        disabled>
+                    <i class="bi bi-trash me-1"></i> Delete Account
+                </button>
+
+                <button class="btn btn-outline-secondary flex-fill"
+                        data-bs-dismiss="modal">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<div class="modal fade" id="changePasswordModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-key me-2 text-primary"></i>
+                    Change User Password
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body px-4">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">New Password</label>
+                    <input type="password"
+                           class="form-control"
+                           id="newPassword"
+                           placeholder="Enter new password">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Confirm Password</label>
+                    <input type="password"
+                           class="form-control"
+                           id="confirmPassword"
+                           placeholder="Confirm new password">
+                </div>
+
+                <div class="alert alert-danger d-none" id="passwordError">
+                    Passwords do not match.
+                </div>
+            </div>
+
+            <div class="modal-footer border-0 px-4 pb-4">
+                <button type="button"
+                        class="btn btn-primary w-100"
+                        id="submitChangePassword">
+                    <i class="bi bi-check-circle me-1"></i>
+                    Update Password
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<style>
+    :root {
+        --primary-blue: #0d6efd;
+        --light-blue: #e7f1ff;
+        --soft-danger: #fff5f5;
+    }
+
+    body {
+        background-color: #f8f9fa;
+    }
+
+    /* Input Styling */
+    .custom-input {
+        padding: 0.6rem 1rem;
+        border-radius: 10px;
+        border: 1px solid #dee2e6;
+        transition: all 0.2s;
+    }
+
+        .custom-input:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+        }
+
+    /* Badge & Soft Colors */
+    .bg-blue-light {
+        background-color: var(--light-blue);
+    }
+
+    .btn-soft-danger {
+        background-color: #fff1f2;
+        color: #e11d48;
+        border: none;
+    }
+
+        .btn-soft-danger:hover {
+            background-color: #ffe4e6;
+            color: #be123c;
+        }
+
+    /* Card Border Radius */
+    .rounded-4 {
+        border-radius: 1rem !important;
+    }
+
+    /* Breadcrumb styling */
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: ">";
+        font-size: 0.8rem;
+        vertical-align: middle;
+    }
+
+    /* Icon size */
+    .bi {
+        vertical-align: middle;
+    }
+</style>
+<script>
+    async function updateUser() {
+        const userData = {
+            Id: "@Model.Id",
+            FullName: document.getElementById('inputFullName').value,
+            Email: document.getElementById('inputEmail').value,
+            PhoneNumber: document.getElementById('inputPhone').value,
+            Role: parseInt(document.getElementById('selectRole').value)
+        };
+
+        const response = await fetch('/Admin/User/Edit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(userData)
+        });
+
+        await handleResponse(response);
+    }
+        async function handleResponse(response) {
+        const notify = document.getElementById("notifyArea");
+
+        if (response.ok) {
+            notify.innerHTML = `
+                <div class="alert alert-success d-flex align-items-center shadow-sm rounded-3 fade show" role="alert">
+                    <i class="fas fa-check-circle fs-4 me-3"></i>
+                    <div>
+                        <strong>Cập nhật thành công!</strong><br>
+                        <small class="text-muted">Đang chuyển về danh sách người dùng...</small>
+                    </div>
+                </div>
+            `;
+
+            setTimeout(() => {
+                window.location.href = "/Admin/User";
+            }, 1200);
+
+        } else {
+            notify.innerHTML = `
+                <div class="alert alert-danger d-flex align-items-center shadow-sm rounded-3 fade show" role="alert">
+                    <i class="fas fa-times-circle fs-4 me-3"></i>
+                    <div>
+                        <strong>Cập nhật thất bại!</strong><br>
+                        <small class="text-muted">Vui lòng kiểm tra lại dữ liệu.</small>
+                    </div>
+                </div>
+            `;
+        }
+    }
+</script>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // 1. Khai báo các phần tử cần thiết
+        const modalEl = document.getElementById("deleteUserModal");
+        const inputConfirm = document.getElementById("deleteConfirmInput");
+        const confirmBtn = document.getElementById("confirmDeleteBtn");
+        const userNameEl = document.getElementById("deleteUserName");
+        const userEmailEl = document.getElementById("deleteUserEmail");
+
+        let deleteUserId = null;
+        let bsModal = null;
+
+        // Khởi tạo Bootstrap Modal instance một lần duy nhất
+        if (modalEl) {
+            bsModal = new bootstrap.Modal(modalEl);
+        }
+
+        /* ==========================================================
+           LẮNG NGHE SỰ KIỆN NHẬP CHỮ 'DELETE'
+           ========================================================== */
+        if (inputConfirm) {
+            inputConfirm.addEventListener("input", function () {
+                const value = this.value.trim();
+                // Sử dụng toUpperCase() để tránh lỗi người dùng quên bật CapsLock
+                // Nếu bạn muốn bắt buộc viết HOA thì dùng: value === "DELETE"
+                if (value.toUpperCase() === "DELETE") {
+                    confirmBtn.disabled = false;
+                } else {
+                    confirmBtn.disabled = true;
+                }
+            });
+        }
+
+        /* ==========================================================
+           MỞ MODAL KHI CLICK NÚT XOÁ (Dùng Event Delegation)
+           ========================================================== */
+        document.addEventListener("click", function (e) {
+            const btn = e.target.closest(".btn-delete-edit");
+            if (!btn) return;
+
+            // Lấy ID và thông tin từ data attributes
+            deleteUserId = btn.getAttribute("data-id");
+            const name = btn.getAttribute("data-name");
+            const email = btn.getAttribute("data-email");
+
+            // Hiển thị thông tin lên Modal
+            if (userNameEl) userNameEl.innerText = name;
+            if (userEmailEl) userEmailEl.innerText = email;
+
+            // Reset trạng thái ô nhập và nút bấm
+            inputConfirm.value = "";
+            confirmBtn.disabled = true;
+
+            // Hiển thị Modal
+            bsModal.show();
+        });
+
+        /* ==========================================================
+           GỬI YÊU CẦU XOÁ LÊN SERVER
+           ========================================================== */
+        confirmBtn.addEventListener("click", async function () {
+            // Kiểm tra bảo vệ cuối cùng trước khi fetch
+            if (confirmBtn.disabled || !deleteUserId) return;
+
+            // Đổi trạng thái nút để tránh click nhiều lần (Double click)
+            confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Deleting...';
+            confirmBtn.disabled = true;
+
+            try {
+                const response = await fetch(`/Admin/User/Delete/${deleteUserId}`, {
+                    method: "DELETE",
+                    headers: {
+                        "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                    }
+                });
+
+                if (response.ok) {
+                   setTimeout(() => {
+                window.location.href = "/Admin/User";
+            }, 1200);
+                } else {
+                    const errorMsg = await response.text();
+                    alert("Error: " + (errorMsg || "Could not delete user."));
+                    resetDeleteButton();
+                }
+            } catch (error) {
+                console.error("Delete error:", error);
+                alert("Server connection error.");
+                resetDeleteButton();
+            }
+        });
+
+        // Hàm reset lại nút nếu xoá thất bại
+        function resetDeleteButton() {
+            confirmBtn.innerHTML = '<i class="bi bi-trash me-1"></i> Delete Account';
+            confirmBtn.disabled = false;
+        }
+
+        /* ==========================================================
+           RESET KHI ĐÓNG MODAL
+           ========================================================== */
+        modalEl.addEventListener("hidden.bs.modal", function () {
+            deleteUserId = null;
+            inputConfirm.value = "";
+            confirmBtn.disabled = true;
+            resetDeleteButton();
+        });
+
+    });
+</script>
+
+
+
+
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const modalEl = document.getElementById("changePasswordModal");
+        const modal = new bootstrap.Modal(modalEl);
+
+        let userId = null;
+
+        document.addEventListener("click", function (e) {
+            const btn = e.target.closest(".btn-change-password");
+            if (!btn) return;
+
+            userId = btn.dataset.id;
+
+            document.getElementById("newPassword").value = "";
+            document.getElementById("confirmPassword").value = "";
+            document.getElementById("passwordError").classList.add("d-none");
+
+            modal.show();
+        });
+
+        document.getElementById("submitChangePassword")
+            .addEventListener("click", async function () {
+
+                const pwd = document.getElementById("newPassword").value.trim();
+                const confirm = document.getElementById("confirmPassword").value.trim();
+                const error = document.getElementById("passwordError");
+
+                    if (!pwd || pwd !== confirm) {
+                    error.classList.remove("d-none");
+                    error.innerText = "Passwords do not match.";
+                    return;
+                }
+
+
+                const res = await fetch("/Admin/User/ChangePassword", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        userId: userId,
+                        newPassword: pwd
+                    })
+                });
+
+                   const notify = document.getElementById("notifyArea");
+
+    if (res.ok) {
+        modal.hide();
+
+        notify.innerHTML = `
+            <div class="alert alert-success d-flex align-items-center shadow-sm rounded-3 fade show" role="alert">
+                <i class="bi bi-check-circle-fill fs-4 me-3"></i>
+                <div>
+                    <strong>Password updated successfully!</strong><br>
+                    <small class="text-muted">
+                        Redirecting to user list...
+                    </small>
+                </div>
+            </div>
+        `;
+
+        setTimeout(() => {
+            window.location.href = "/Admin/User";
+        }, 1200);
+
+    } else {
+        notify.innerHTML = `
+            <div class="alert alert-danger d-flex align-items-center shadow-sm rounded-3 fade show" role="alert">
+                <i class="bi bi-x-circle-fill fs-4 me-3"></i>
+                <div>
+                    <strong>Password update failed!</strong><br>
+                    <small class="text-muted">
+                        Please try again.
+                    </small>
+                </div>
+            </div>
+        `;
+    }
+
+            });
+    });
+</script>

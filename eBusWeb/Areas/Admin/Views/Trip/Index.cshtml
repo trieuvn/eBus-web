@@ -567,9 +567,9 @@
 
                         <div class="col-md-6">
                             <div class="text-muted">Price</div>
-                            <div class="fw-semibold text-success">
-                                ${data.basePrice.toLocaleString()} đ
-                            </div>
+                                <div class="fw-semibold text-success">
+                                    ${(Number(data.basePrice) || 0).toLocaleString()} đ
+                                </div>
                         </div>
 
                         <div class="col-md-6">

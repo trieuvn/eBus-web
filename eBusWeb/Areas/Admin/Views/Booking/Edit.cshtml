@@ -19,22 +19,22 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#1e90ff",
-                        "primary-hover": "#1c86ee",
-                        "background-light": "#f0f8ff",
+                        "primary": "#dc2626",
+                        "primary-hover": "#b91c1c",
+                        "background-light": "#f8f9fa",
                         "background-dark": "#0b1a2b",
                         "surface-light": "#ffffff",
                         "surface-dark": "#162b45",
-                        "border-light": "#d0e4ff",
+                        "border-light": "#e5e7eb",
                         "border-dark": "#1c3b5a",
                         "text-main": "#0b1a2b",
-                        "text-muted": "#5a7d99",
+                        "text-muted": "#6b7280",
                     },
                     fontFamily: { "display": ["Inter", "sans-serif"] },
                     borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
                 }
             },
-            corePlugins: { preflight: false } // tắt reset mặc định
+            corePlugins: { preflight: false }
         }
     </script>
 
@@ -104,10 +104,12 @@
                 <p class="text-text-muted dark:text-gray-400 text-sm">Modify logistics, passenger details, and payment status.</p>
             </div>
             <div class="flex gap-2">
-                    <button type="button" onclick="window.location.href='/Admin/Booking'" class="flex items-center justify-center rounded-lg h-9 px-3 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark text-text-main dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 text-sm font-medium transition-colors">
-                    <span class="material-symbols-outlined text-base mr-1">arrow_back</span> Back
+                <button type="button" onclick="window.location.href='/Admin/Booking'" class="flex items-center justify-center rounded-lg h-9 px-3 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark text-text-main dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 text-sm font-medium transition-colors">
+                    <span class="material-symbols-outlined text-base mr-1">arrow_back</span> Back to List
                 </button>
-                
+                <button type="button" onclick="if(confirm('Are you sure you want to cancel this booking?')) { cancelBooking(); }" class="flex items-center justify-center rounded-lg h-9 px-3 bg-white border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium transition-colors">
+                    <span class="material-symbols-outlined text-base mr-1">cancel</span> Cancel Booking
+                </button>
             </div>
         </div>
 
@@ -117,11 +119,10 @@
             <div class="lg:col-span-2 space-y-6">
 
                 <!-- Trip Details -->
-                <!-- Trip Details -->
                 <section class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark overflow-hidden">
                     <div class="px-4 py-3 border-b border-border-light dark:border-border-dark flex items-center justify-between">
                         <h3 class="text-md font-semibold text-text-main dark:text-white flex items-center gap-1">
-                            <span class="material-symbols-outlined text-primary">alt_route</span> Trip Details
+                            <span class="material-symbols-outlined text-red-600">alt_route</span> Trip Details
                         </h3>
                     </div>
                     <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -187,7 +188,7 @@
                 <section class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark overflow-hidden">
                     <div class="px-4 py-3 border-b border-border-light dark:border-border-dark flex items-center justify-between">
                         <h3 class="text-md font-semibold text-text-main dark:text-white flex items-center gap-1">
-                            <span class="material-symbols-outlined text-primary">person</span> Customer Information
+                            <span class="material-symbols-outlined text-red-600">person</span> Customer Information
                         </h3>
                     </div>
                     <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -216,7 +217,7 @@
                 <section class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark overflow-hidden">
                     <div class="px-4 py-3 border-b border-border-light dark:border-border-dark">
                         <h3 class="text-md font-semibold text-text-main dark:text-white flex items-center gap-1">
-                            <span class="material-symbols-outlined text-primary">payments</span> Financials
+                            <span class="material-symbols-outlined text-red-600">payments</span> Financials
                         </h3>
                     </div>
 
@@ -260,7 +261,7 @@
                 <section class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark overflow-hidden">
                     <div class="px-4 py-3 border-b border-border-light dark:border-border-dark flex items-center justify-between text-sm">
                         <h3 class="font-semibold text-text-main dark:text-white flex items-center gap-1">
-                            <span class="material-symbols-outlined text-primary">groups</span> Passengers
+                            <span class="material-symbols-outlined text-red-600">groups</span> Passengers
                         </h3>
                             <button id="btnAddPassenger"
                                     type="button"
@@ -296,26 +297,32 @@
 
             </div>
         </div>
-            <div class="flex justify-end mt-6">
-                <button type="button"
-                        onclick="saveBooking()"
-                        class="h-11 px-8 min-w-[160px]
-                   rounded-xl
-                   bg-primary hover:bg-primary-hover
-                   text-white font-semibold
-                   shadow-md hover:shadow-lg
-                   transition-all duration-200
-                   flex items-center justify-center gap-2
-                   border-0
-                   focus:outline-none focus:ring-0
-                   active:scale-[0.98]">
-                    <span class="material-symbols-outlined text-base">save</span>
-                    Save Changes
-                </button>
+            <!-- Footer with Last edited info -->
+            <div class="flex justify-between items-center mt-6 pt-4 border-t border-border-light">
+                <p class="text-sm text-gray-400">Last edited by <span class="font-medium text-gray-600">Admin_System</span> on @DateTime.Now.ToString("yyyy-MM-dd HH:mm")</p>
+                <div class="flex gap-3">
+                    <button type="button"
+                            onclick="window.location.href='/Admin/Booking'"
+                            class="h-11 px-6 rounded-xl bg-white border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
+                        Discard Changes
+                    </button>
+                    <button type="button"
+                            onclick="saveBooking()"
+                            class="h-11 px-8 min-w-[160px]
+                       rounded-xl
+                       bg-red-600 hover:bg-red-700
+                       text-white font-semibold
+                       shadow-md hover:shadow-lg
+                       transition-all duration-200
+                       flex items-center justify-center gap-2
+                       border-0
+                       focus:outline-none focus:ring-0
+                       active:scale-[0.98]">
+                        <span class="material-symbols-outlined text-base">save</span>
+                        Save Updates
+                    </button>
+                </div>
             </div>
-
-
-        
     </main>
     </form>
 
@@ -364,6 +371,40 @@
 </div>
 
 <script>
+    function cancelBooking() {
+        const bookingId = document.querySelector('input[name="Booking.Id"]').value;
+        fetch('/Admin/Booking/Edit', {
+            method: 'POST',
+            body: new URLSearchParams({
+                'Booking.Id': bookingId,
+                'Booking.BookingStatus': '2',
+                'Booking.TripId': document.querySelector('input[name="Booking.TripId"]').value,
+                'Booking.UserId': document.querySelector('input[name="Booking.UserId"]').value,
+                'Booking.ContactName': document.querySelector('input[name="Booking.ContactName"]').value,
+                'Booking.ContactEmail': document.querySelector('input[name="Booking.ContactEmail"]').value,
+                'Booking.PickupStopId': document.querySelector('select[name="Booking.PickupStopId"]').value,
+                'Booking.DropoffStopId': document.querySelector('select[name="Booking.DropoffStopId"]').value,
+                'Booking.TotalAmount': document.querySelector('input[name="Booking.TotalAmount"]').value
+            }),
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        })
+        .then(res => res.json())
+        .then(res => {
+            if (res.success) {
+                alert('Booking cancelled successfully');
+                window.location.href = '/Admin/Booking';
+            } else {
+                alert('Error: ' + (res.message || 'Failed to cancel booking'));
+            }
+        })
+        .catch(() => {
+            alert('Server error. Please try again.');
+        });
+    }
+
     function saveBooking() {
         const form = document.getElementById("editBookingForm");
         const msgBox = document.getElementById("pageMessage");

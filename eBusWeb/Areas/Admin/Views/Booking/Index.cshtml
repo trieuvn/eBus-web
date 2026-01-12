@@ -262,36 +262,41 @@
                 <div class="tw-w-16 tw-h-16 tw-bg-red-50 tw-rounded-full tw-flex tw-items-center tw-justify-center tw-mx-auto tw-mb-4">
                     <span class="material-symbols-outlined tw-text-red-600 tw-text-[32px]">warning</span>
                 </div>
-                <h3 class="tw-text-xl tw-font-bold tw-text-slate-900">Xác nhận xóa đặt chỗ</h3>
+                <h3 class="tw-text-xl tw-font-bold tw-text-slate-900">Are you sure?</h3>
                 <p id="deleteMessage" class="tw-text-slate-500 tw-mt-2 tw-text-sm">
-                    Bạn có chắc chắn muốn xóa mã đặt chỗ này? Hành động này không thể hoàn tác.
+                    This action cannot be undone. The booking will be permanently removed and the seat released immediately.
                 </p>
             </div>
 
             <div class="tw-px-6 tw-pb-6">
+                <p class="tw-text-xs tw-font-bold tw-text-slate-400 tw-uppercase tw-tracking-wider tw-mb-3">Booking Details</p>
                 <div class="tw-bg-slate-50 tw-rounded-xl tw-p-4 tw-border tw-border-slate-100 tw-space-y-3 tw-text-sm">
                     <div class="tw-flex tw-justify-between">
-                        <span class="tw-text-slate-500">Mã đặt chỗ:</span>
+                        <span class="tw-text-slate-500">Booking ID</span>
                         <span id="delId" class="tw-font-bold tw-text-slate-900">#BK-000</span>
                     </div>
                     <div class="tw-flex tw-justify-between">
-                        <span class="tw-text-slate-500">Hành khách:</span>
+                        <span class="tw-text-slate-500">Passenger</span>
                         <span id="delPassenger" class="tw-font-semibold tw-text-slate-900">-</span>
                     </div>
                     <div class="tw-flex tw-justify-between">
-                        <span class="tw-text-slate-500">Lộ trình:</span>
+                        <span class="tw-text-slate-500">Trip Route</span>
                         <span id="delRoute" class="tw-text-slate-900">-</span>
+                    </div>
+                    <div class="tw-flex tw-justify-between">
+                        <span class="tw-text-slate-500">Departure</span>
+                        <span id="delDeparture" class="tw-text-slate-900">-</span>
                     </div>
                 </div>
             </div>
 
             <div class="tw-bg-slate-50 tw-px-6 tw-py-4 tw-flex tw-gap-3 tw-justify-end">
                 <button id="closeDeleteBtn" class="tw-px-4 tw-py-2 tw-text-sm tw-font-semibold tw-text-slate-600 hover:tw-bg-slate-200 tw-rounded-lg tw-transition-colors tw-border-none tw-bg-transparent">
-                    Hủy bỏ
+                    Cancel
                 </button>
                 <button id="confirmDeleteBtn" class="tw-bg-red-600 hover:tw-bg-red-700 tw-text-white tw-px-6 tw-py-2 tw-rounded-lg tw-text-sm tw-font-semibold tw-flex tw-items-center tw-gap-2 tw-shadow-lg tw-shadow-red-200 tw-transition-all tw-border-none">
                     <span class="material-symbols-outlined tw-text-[18px]">delete_forever</span>
-                    Xác nhận xóa
+                    Confirm Deletion
                 </button>
             </div>
         </div>
@@ -350,12 +355,12 @@
             button.addEventListener("click", async () => {
                 const bookingId = button.getAttribute("data-id");
 
-                // Mở modal và hiển thị loading spinner
+                // Open modal and display loading spinner
                 openModal();
                 modalContent.innerHTML = `
                     <div class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-py-10">
                         <div class="tw-animate-spin tw-border-4 tw-border-t-blue-500 tw-border-slate-200 tw-rounded-full tw-w-12 tw-h-12"></div>
-                        <p class="tw-mt-4 tw-text-slate-400 tw-font-medium">Đang tải dữ liệu...</p>
+                        <p class="tw-mt-4 tw-text-slate-400 tw-font-medium">Loading data...</p>
                     </div>
                 `;
 
@@ -369,36 +374,36 @@
                             ? data.passengers.map(p => `
                                 <tr class="tw-border-b last:tw-border-none">
                                     <td class="tw-py-2 tw-px-3 tw-font-medium">${p.fullName}</td>
-                                    <td class="tw-py-2 tw-px-3 tw-text-blue-600">Ghế: ${p.seatNumber}</td>
+                                    <td class="tw-py-2 tw-px-3 tw-text-blue-600">Seat: ${p.seatNumber}</td>
                                 </tr>
                             `).join("")
-                            : `<tr><td colspan="2" class="tw-text-center tw-py-4 tw-text-slate-400">Không có thông tin hành khách</td></tr>`;
+                            : `<tr><td colspan="2" class="tw-text-center tw-py-4 tw-text-slate-400">No passenger information</td></tr>`;
 
                         modalContent.innerHTML = `
                             <div class="tw-space-y-6">
                                 <div class="tw-grid tw-grid-cols-2 tw-gap-4">
                                     <div>
-                                        <p class="tw-text-xs tw-uppercase tw-font-bold tw-text-slate-400">Mã đặt chỗ</p>
+                                        <p class="tw-text-xs tw-uppercase tw-font-bold tw-text-slate-400">Booking ID</p>
                                         <p class="tw-font-semibold">#BK-${data.bookingId}</p>
                                     </div>
                                     <div>
-                                        <p class="tw-text-xs tw-uppercase tw-font-bold tw-text-slate-400">Người liên hệ</p>
+                                        <p class="tw-text-xs tw-uppercase tw-font-bold tw-text-slate-400">Contact Name</p>
                                         <p class="tw-font-semibold">${data.bookingContactName}</p>
                                     </div>
                                 </div>
 
                                 <div>
-                                    <p class="tw-text-xs tw-uppercase tw-font-bold tw-text-slate-400">Tài khoản đặt</p>
-                                    <p class="tw-font-semibold">${data.user ? data.user.fullName : "Khách vãng lai (Guest)"}</p>
+                                    <p class="tw-text-xs tw-uppercase tw-font-bold tw-text-slate-400">Registered User</p>
+                                    <p class="tw-font-semibold">${data.user ? data.user.fullName : "Guest"}</p>
                                 </div>
 
                                 <div>
-                                    <p class="tw-text-xs tw-uppercase tw-font-bold tw-text-slate-400 tw-mb-2">Danh sách hành khách</p>
+                                    <p class="tw-text-xs tw-uppercase tw-font-bold tw-text-slate-400 tw-mb-2">Passenger List</p>
                                     <table class="tw-w-full tw-text-left tw-border tw-border-slate-200 tw-rounded-lg tw-overflow-hidden">
                                         <thead class="tw-bg-slate-50">
                                             <tr>
-                                                <th class="tw-py-2 tw-px-3 tw-font-medium">Hành khách</th>
-                                                <th class="tw-py-2 tw-px-3 tw-font-medium">Ghế</th>
+                                                <th class="tw-py-2 tw-px-3 tw-font-medium">Passenger</th>
+                                                <th class="tw-py-2 tw-px-3 tw-font-medium">Seat</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -413,7 +418,7 @@
                     }
                 } catch (err) {
                     console.error("Fetch error:", err);
-                    modalContent.innerHTML = `<p class="tw-text-rose-500 tw-text-center tw-py-10">Không thể kết nối đến máy chủ.</p>`;
+                    modalContent.innerHTML = `<p class="tw-text-rose-500 tw-text-center tw-py-10">Unable to connect to server.</p>`;
                 }
             });
         });
@@ -462,11 +467,13 @@
                 document.getElementById("delId").textContent = `#BK-${currentBookingId}`;
                 document.getElementById("delPassenger").textContent = passenger;
                 document.getElementById("delRoute").textContent = route;
+                const departure = this.dataset.departure || "-";
+                document.getElementById("delDeparture").textContent = departure;
 
-                // Cập nhật câu thông báo (nếu có p#deleteMessage)
+                // Update delete message
                 const msg = document.getElementById("deleteMessage");
                 if(msg) {
-                    msg.innerHTML = `Bạn có chắc chắn muốn xóa đặt chỗ <span class="tw-font-bold tw-text-red-600">#BK-${currentBookingId}</span> của <strong>${passenger}</strong>?`;
+                    msg.innerHTML = `This action cannot be undone. The booking <span class="tw-font-bold tw-text-red-600">#BK-${currentBookingId}</span> for <strong>${passenger}</strong> will be permanently removed and the seat released immediately.`;
                 }
 
                 toggleDeleteModal(true);
@@ -480,7 +487,7 @@
             // Hiệu ứng loading trên nút
             const originalContent = this.innerHTML;
             this.disabled = true;
-            this.innerHTML = `<span class="tw-animate-spin tw-inline-block tw-w-4 tw-h-4 tw-border-2 tw-border-white tw-border-t-transparent tw-rounded-full"></span> Đang xóa...`;
+            this.innerHTML = `<span class="tw-animate-spin tw-inline-block tw-w-4 tw-h-4 tw-border-2 tw-border-white tw-border-t-transparent tw-rounded-full"></span> Deleting...`;
 
             try {
                 // Gọi tới Action Delete trong Controller
@@ -495,13 +502,13 @@
                     // Reload lại trang để cập nhật danh sách
                     window.location.reload();
                 } else {
-                    alert("Lỗi: " + (data.message || "Không thể xóa."));
+                    alert("Error: " + (data.message || "Unable to delete."));
                     this.disabled = false;
                     this.innerHTML = originalContent;
                 }
             } catch (err) {
                 console.error("Fetch error:", err);
-                alert("Không thể kết nối đến máy chủ");
+                alert("Unable to connect to server");
                 this.disabled = false;
                 this.innerHTML = originalContent;
             }

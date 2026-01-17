@@ -24,7 +24,7 @@ namespace eBusWeb.Models
         [Column("bus_type")]
         public string BusType { get; set; }
 
-        [Column("base_price")]
+        [Column("price")]
         public int BasePrice { get; set; }
 
         [Column("status")]

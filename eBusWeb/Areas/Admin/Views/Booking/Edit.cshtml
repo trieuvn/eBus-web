@@ -1,9 +1,5 @@
 ﻿@model eBusWeb.Areas.Admin.Controllers.BookingEditVM;
-@{
-    var totalMinutes = Model.Route?.EstDuration ?? 0;
-    var hours = totalMinutes / 60;
-    var minutes = totalMinutes % 60;
-}
+
 <!DOCTYPE html>
 <html class="light" lang="en">
 <head>
@@ -175,7 +171,7 @@
                                     <div class="w-px h-6 bg-blue-200 dark:bg-blue-800 mx-2"></div>
                                     <div class="flex flex-col">
                                         <span class="uppercase tracking-wide text-xs text-blue-600 dark:text-blue-400">Est. Duration</span>
-                                        <span class="font-medium text-blue-900 dark:text-blue-100">@(hours > 0 ? $"{hours}h " : "")@($"{minutes}m")</span>
+                                        <span class="font-medium text-blue-900 dark:text-blue-100">@Model.Route.EstDuration</span>
                                     </div>
                                 </div>
                             </div>

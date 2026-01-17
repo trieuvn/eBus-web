@@ -367,25 +367,22 @@ namespace eBusWeb.Areas.Admin.Controllers
         [HttpGet]
         public async Task<IActionResult> GetForSelect2(string q)
         {
-            var query = _supabase
-                .From<User>()
-                .Select("id, full_name");
+            var query = _supabase.From<User>();
 
-            if (!string.IsNullOrWhiteSpace(q))
+            if (!string.IsNullOrEmpty(q))
             {
-                // ilike = search không phân biệt hoa thường
-                query = query.Filter("full_name", Supabase.Postgrest.Constants.Operator.ILike, $"%{q}%");
+                query = (Supabase.Interfaces.ISupabaseTable<User, Supabase.Realtime.RealtimeChannel>)query.Filter("full_name", Operator.ILike, $"%{q}%");
             }
 
-            var response = await query.Get();
+            var res = await query.Limit(10).Get();
 
-            var users = response.Models ?? new List<User>();
+            // Đảm bảo trả về đúng định dạng mà Select2 cần: { id, text }
+            var results = res.Models.Select(u => new {
+                id = u.Id, // Đây phải là Guid/String khớp với bảng User
+                text = u.FullName + " (" + u.Email + ")"
+            });
 
-            return Json(users.Select(u => new
-            {
-                id = u.Id,             // GUID
-                text = u.FullName      // hiển thị cho Select2
-            }));
+            return Json(results);
         }
 
         [HttpPost]
@@ -393,21 +390,38 @@ namespace eBusWeb.Areas.Admin.Controllers
         {
             try
             {
-                if (model?.Booking == null)
+                if (model == null)
                     return Json(new { success = false, message = "INVALID_DATA" });
 
+                // 1. Tạo Booking entity
+                var booking = new Booking
+                {
+                    UserId = model.UserId,
+                    TripId=1,
+                    PickupStopId = model.PickupStopId,
+                    DropoffStopId = model.DropoffStopId,
+                    ContactName = model.ContactName,
+                    ContactMobile = model.ContactMobile,
+                    ContactEmail = model.ContactEmail,
+                    TotalAmount = model.TotalAmount,
+                    BookingStatus = 1, // Pending
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                // 2. Insert Booking
                 var bookingRes = await _supabase
                     .From<Booking>()
-                    .Insert(model.Booking);
+                    .Insert(booking);
 
-                var booking = bookingRes.Models.FirstOrDefault();
-                if (booking == null)
+                var createdBooking = bookingRes.Models.FirstOrDefault();
+                if (createdBooking == null)
                     return Json(new { success = false, message = "CREATE_FAILED" });
 
+                // 3. Insert Passengers
                 if (model.Passengers?.Any() == true)
                 {
                     foreach (var p in model.Passengers)
-                        p.BookingId = booking.Id;
+                        p.BookingId = createdBooking.Id;
 
                     await _supabase
                         .From<BookingPassenger>()
@@ -426,6 +440,7 @@ namespace eBusWeb.Areas.Admin.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
+
 
     }
 }

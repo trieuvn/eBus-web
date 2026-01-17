@@ -220,7 +220,8 @@
             </form>
         </div>
     </main>
-
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="~/dist/js/select2.js"></script>
     <script>
         // Toast helper
         function showToast(message, type = 'success') {
@@ -349,7 +350,12 @@
             throw new Error('Vui lòng chọn người liên hệ');
         }
 
-        const contactName = contactData[0].text; // tên hiển thị
+                const contactUserId = contactData[0].id;   // GUID
+        const contactName = contactData[0].text;   // tên hiển thị
+
+        if (!contactUserId) {
+            throw new Error('Người liên hệ không hợp lệ');
+        }
 
 
                 const passengers = [];
@@ -361,17 +367,16 @@
 
                 if (passengers.length === 0) throw new Error('Vui lòng thêm ít nhất 1 hành khách');
 
-                const payload = {
-                    booking: {
-                        routeId: parseInt(routeSelect.value) || 0,
-                        pickupStopId: parseInt(pickupSelect.value) || 0,
-                        dropoffStopId: parseInt(dropoffSelect.value) || 0,
-                        contactName,
-                        bookingStatus: document.querySelector('input[name="status"]:checked')?.value || 'Pending',
-                        totalAmount: parseInt(totalAmountInput.value) || 0
-                    },
-                    passengers
-                };
+                        const payload = {
+            userId: contactUserId,                     // ✅ ROOT                // nếu chưa có Trip thì để 0 hoặc null
+            pickupStopId: parseInt(pickupSelect.value),
+            dropoffStopId: parseInt(dropoffSelect.value),
+            contactName: contactName,
+            contactMobile: null,
+            contactEmail: null,
+            totalAmount: parseInt(totalAmountInput.value),
+            passengers: passengers
+        };
 
                 const res = await fetch('/Admin/Booking/Create', {
                     method: 'POST',
@@ -422,7 +427,7 @@
         });
 
     </script>
-    <script src="~/dist/js/select2.js"></script>
+
 
 </body>
 </html>

@@ -7,7 +7,7 @@ namespace eBusWeb.Models
     public class Payment : BaseModel
     {
         [PrimaryKey("id", false)]
-        public Guid Id { get; set; }
+        public long Id { get; set; }   // ✅ BIGINT
 
         [Column("booking_id")]
         public long BookingId { get; set; }
@@ -27,5 +27,6 @@ namespace eBusWeb.Models
         [Column("created_at")]
         public DateTime CreatedAt { get; set; }
     }
+
 
 }

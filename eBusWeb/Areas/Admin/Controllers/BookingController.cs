@@ -184,126 +184,55 @@ namespace eBusWeb.Areas.Admin.Controllers
             }
         }
         [HttpGet]
-        public async Task<IActionResult> GetPassengersByBooking(long bookingId)
-        {
-            try
-            {
-                // 1️⃣ Lấy thông tin booking
-                var bookingTable = _supabase.From<Booking>();
-                var booking = await bookingTable.Where(b => b.Id == bookingId).Single();
-
-                if (booking == null)
-                    return Json(new { success = false, message = "Booking not found." });
-
-                // 2️⃣ Lấy thông tin user chính của booking
-                User userInfo = null;
-                if (booking.UserId != Guid.Empty)
-                {
-                    var userTable = _supabase.From<User>();
-                    userInfo = await userTable.Where(u => u.Id == booking.UserId).Single();
-                }
-
-                // 3️⃣ Lấy danh sách hành khách trong booking
-                var passengersTable = _supabase.From<BookingPassenger>();
-                var passengersResponse = await passengersTable.Where(p => p.BookingId == bookingId).Get();
-                var passengers = passengersResponse.Models.Select(p => new
-                {
-                    p.Id,
-                    FullName = string.IsNullOrEmpty(p.FullName) ? "Unknown" : p.FullName,
-                    p.SeatNumber
-                }).ToList();
-
-                // 4️⃣ Lấy tất cả users
-                var allUsersTable = _supabase.From<User>();
-                var allUsersResponse = await allUsersTable.Get();
-                var allUsers = allUsersResponse.Models.ToList();
-
-                // 5️⃣ Lọc ra những user chưa được chọn trong booking (loại bỏ user chính)
-                var availableUsers = allUsers
-                    .Where(u => booking.UserId == Guid.Empty || u.Id != booking.UserId)
-                    .Select(u => new
-                    {
-                        u.Id,
-                        u.FullName,
-                        u.Email
-                    })
-                    .ToList();
-
-                // 6️⃣ Trả dữ liệu
-                return Json(new
-                {
-                    success = true,
-                    bookingId,
-                    bookingContactName = booking.ContactName,
-                    user = userInfo != null ? new { userInfo.Id, userInfo.FullName } : null,
-                    passengers,
-                    availableUsers
-                });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = ex.Message });
-            }
-        }
-        [HttpGet]
         public async Task<IActionResult> Details(long bookingId)
         {
             try
             {
-                // 1️⃣ Lấy booking - Sử dụng FirstOrDefault để an toàn
-                var booking = await _supabase.From<Booking>()
+                // Sử dụng .Get() thay vì .Single() để kiểm soát lỗi tốt hơn
+                var bookingResponse = await _supabase.From<Booking>()
                     .Where(b => b.Id == bookingId)
                     .Get();
 
-                var currentBooking = booking.Model;
-
+                var currentBooking = bookingResponse.Model;
                 if (currentBooking == null)
                     return Json(new { success = false, message = "Booking không tồn tại." });
 
-                // 2️⃣ Lấy user
+                // KHÔNG lấy thông tin User nếu bạn muốn tránh lỗi Guid
+                // Hoặc nếu lấy, phải kiểm tra cực kỳ kỹ:
                 object userInfo = null;
-                if (currentBooking.UserId != Guid.Empty)
+                if (currentBooking.UserId != null && currentBooking.UserId != Guid.Empty)
                 {
-                    var userResponse = await _supabase.From<User>()
-                        .Where(u => u.Id == currentBooking.UserId)
-                        .Get();
-                    if (userResponse.Model != null)
+                    // Chỉ truy vấn khi UserId thực sự là một Guid hợp lệ
+                    var userRes = await _supabase.From<User>().Where(u => u.Id == currentBooking.UserId).Get();
+                    if (userRes.Model != null)
                     {
-                        userInfo = new
-                        {
-                            id = userResponse.Model.Id,
-                            fullName = userResponse.Model.FullName
-                        };
+                        userInfo = new { id = userRes.Model.Id, fullName = userRes.Model.FullName };
                     }
                 }
 
-                // 3️⃣ Lấy danh sách hành khách
                 var passengersResponse = await _supabase.From<BookingPassenger>()
                     .Where(p => p.BookingId == bookingId)
                     .Get();
 
-                var passengers = passengersResponse.Models.Select(p => new
-                {
-                    id = p.Id,
-                    fullName = string.IsNullOrEmpty(p.FullName) ? "Unknown" : p.FullName,
-                    seatNumber = p.SeatNumber
-                }).ToList();
-
-                // 4️⃣ Trả về JSON (Lưu ý: ASP.NET Core mặc định biến thành camelCase khi sang JS)
                 return Json(new
                 {
                     success = true,
                     bookingId = currentBooking.Id,
                     bookingContactName = currentBooking.ContactName,
                     user = userInfo,
-                    passengers = passengers
+                    passengers = passengersResponse.Models.Select(p => new {
+                        id = p.Id,
+                        fullName = p.FullName ?? "Unknown",
+                        seatNumber = p.SeatNumber
+                    })
                 });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+                return Json(new { success = false, message = "Lỗi: " + ex.Message });
             }
         }
+        
         [HttpPost]
         public async Task<IActionResult> Delete(long bookingId)
         {

@@ -12,8 +12,18 @@ namespace eBusWeb.Models
         [Column("name")]
         public string Name { get; set; }
 
-        [Column("est_duration")]
-        public int EstDuration { get; set; }
+        [Column("origin")]
+        public string Origin { get; set; }
+
+        [Column("destination")]
+        public string Destination { get; set; }
+
+        [Column("distance_km")]
+        public int DistanceKm { get; set; }
+
+        [Column("estimated_duration")]
+        public string EstimatedDuration { get; set; }
     }
+
 
 }

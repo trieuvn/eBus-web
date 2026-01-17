@@ -116,7 +116,7 @@ namespace eBusWeb.Controllers
                 DepartureTime = tripResult.DepartureTime.ToString("dd/MM/yyyy HH:mm"),
                 ArrivalTime = tripResult.ArrivalTime.ToString("dd/MM/yyyy HH:mm"),
                 RouteName = routeResult?.Name,
-                RouteDuration = routeResult?.EstDuration
+                RouteDuration = routeResult?.EstimatedDuration
             });
         }
 

@@ -52,7 +52,7 @@
                                     }
                                 </div>
                                 <div class="small text-muted mt-1">
-                                    <i class="fa-regular fa-clock me-1"></i> @(r.EstDuration / 60)h @(r.EstDuration % 60)m
+                                    <i class="fa-regular fa-clock me-1"></i> @r.EstimatedDuration
                                 </div>
                             </a>
                         }
@@ -207,7 +207,8 @@
                                 <div class="col-md-4">
                                     <label class="form-label small fw-bold" for="routeDuration">Duration (Min)</label>
                                     <input id="routeDuration" class="form-control bg-light border-0 px-3 py-2" 
-                                           value="@ViewBag.SelectedRoute.EstDuration" />
+       value="@ViewBag.SelectedRoute.EstimatedDuration" />
+
                                 </div>
                             </div>
 
@@ -475,7 +476,7 @@
 <script>
 async function saveRouteAndStops(routeId) {
     const name = document.getElementById('routeName').value;
-    const duration = parseInt(document.getElementById('routeDuration').value);
+    const duration = document.getElementById('routeDuration').value;
 
     // Lấy danh sách Stops
     const rows = document.querySelectorAll('#stopsTableBody tr');
@@ -499,12 +500,12 @@ async function saveRouteAndStops(routeId) {
         });
     });
 
-    const payload = {
-        Id: routeId,
-        Name: name,
-        EstDuration: duration,
-        Stops: stopsPayload
-    };
+   const payload = {
+    Id: routeId,
+    Name: name,
+    EstimatedDuration: document.getElementById('routeDuration').value,
+    Stops: stopsPayload
+};
 
     const messageDiv = document.getElementById('routeMessage');
 

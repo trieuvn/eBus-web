@@ -142,15 +142,14 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="col-md-5">
-                        <label class="form-label fw-bold text-secondary small">ROUTE TYPE</label>
-                        <select id="selRouteType" class="form-select form-select-sm">
-                            <option value="Express" selected>Express</option>
-                            <option value="Standard">Standard</option>
-                            <option value="Overnight">Overnight</option>
-                        </select>
-                    </div>
+    <label class="form-label fw-bold text-secondary small">DISTANCE (KM)</label>
+    <div class="input-group input-group-sm">
+        <input type="number" id="txtDistance" class="form-control" placeholder="0">
+        <span class="input-group-text bg-light text-muted">km</span>
+    </div>
+</div>
+                    
                 </div>
             </div>
         </div>
@@ -267,27 +266,37 @@
 
         /* ========= SAVE ROUTE ========= */
         btnSaveRoute.addEventListener('click', async function () {
+    const routeName = document.getElementById('txtRouteName').value.trim();
+    const hours = parseInt(document.getElementById('numHours').value) || 0;
+    const minutes = parseInt(document.getElementById('numMinutes').value) || 0;
+    const stops = stopsContainer.querySelectorAll('.stop-item');
 
-            const routeName = document.getElementById('txtRouteName').value.trim();
-            const hours = parseInt(document.getElementById('numHours').value) || 0;
-            const minutes = parseInt(document.getElementById('numMinutes').value) || 0;
-            const stops = stopsContainer.querySelectorAll('.stop-item');
+    // 1. Validation cơ bản
+    if (!routeName.includes("->")) {
+        Swal.fire('Định dạng sai', 'Tên tuyến phải có dạng "Nơi đi -> Nơi đến"', 'warning');
+        return;
+    }
 
-            if (!routeName) {
-                Swal.fire('Validation Error', 'Route name is required.', 'warning');
-                return;
-            }
+    // 2. Tách Origin và Destination bằng Regex hoặc Split
+    // Ví dụ: "Hà Nội -> TP.HCM" -> ["Hà Nội", "TP.HCM"]
+    const parts = routeName.split("->").map(p => p.trim());
+    const origin = parts[0];
+    const destination = parts[1];
 
-            if (stops.length < 2) {
-                Swal.fire('Validation Error', 'At least 2 stops required.', 'warning');
-                return;
-            }
+    if (!origin || !destination) {
+        Swal.fire('Lỗi', 'Không xác định được điểm đi hoặc điểm đến từ tên tuyến.', 'error');
+        return;
+    }
 
-            this.disabled = true;
-            this.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
+    this.disabled = true;
+    this.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
 
-                const payload = {
+    // 3. Build Payload
+    const payload = {
         name: routeName,
+        origin: origin,       // Đã tách xong
+        destination: destination, // Đã tách xong
+        distanceKm: 250,      // Bạn có thể thêm input id="numDistance" và lấy giá trị ở đây
         hours: hours,
         minutes: minutes,
         stops: Array.from(stops).map((stop, index) => ({

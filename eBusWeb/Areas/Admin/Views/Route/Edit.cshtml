@@ -110,8 +110,16 @@
                         <div class="col-12">
                             <label class="form-label extra-small fw-bold text-muted mb-1">Estimated Duration (Minutes)</label>
                             <div class="input-group input-group-sm">
-                                <input type="number" id="routeDuration" class="form-control border-light-subtle extra-small" value="@route?.EstimatedDuration">
+                                <input type="text" id="routeDuration" class="form-control border-light-subtle extra-small" value="@route?.EstimatedDuration">
                                 <span class="input-group-text bg-white extra-small px-2 text-muted">min</span>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label extra-small fw-bold text-muted mb-1">Distance (KM)</label>
+                            <div class="input-group input-group-sm">
+                                <input type="number" id="routeDistance" class="form-control border-light-subtle extra-small"
+                                       value="@(ViewBag.SelectedRoute?.DistanceKm ?? 0)">
+                                <span class="input-group-text bg-white extra-small px-2 text-muted">km</span>
                             </div>
                         </div>
                     </div>
@@ -285,20 +293,30 @@
     }
 
     // 5. Lưu toàn bộ Route + Stops
-    async function saveAllData() {
+       async function saveAllData() {
         const routeId = @route?.Id;
+        const routeName = document.getElementById('routeName').value.trim();
         const stopItems = document.querySelectorAll('.stop-item');
+
+        // LOGIC TÁCH CHUỖI: "A -> B"
+        const parts = routeName.split('->').map(s => s.trim());
+        const origin = parts[0] || "";
+        const destination = parts[parts.length - 1] || "";
 
         const payload = {
             Id: routeId,
-            Name: document.getElementById('routeName').value,
+            Name: routeName,
+            Origin: origin,                             // Gửi Origin đã tách
+            Destination: destination,                   // Gửi Destination đã tách
+            DistanceKm: parseInt(document.getElementById('routeDistance').value) || 0, // Lấy Distance
             EstDuration: parseInt(document.getElementById('routeDuration').value) || 0,
             Stops: []
         };
 
+        // ... giữ nguyên logic lặp qua stopItems ...
         stopItems.forEach((item, index) => {
             payload.Stops.push({
-                Id: parseInt(item.getAttribute('data-id')),
+                Id: parseInt(item.getAttribute('data-id')) || 0,
                 RouteId: routeId,
                 LocationName: item.querySelector('.stop-location').value,
                 StopType: parseInt(item.querySelector('.stop-type').value),
@@ -306,6 +324,9 @@
             });
         });
 
+        // Thực hiện Fetch như cũ
+        console.log("Payload sending:", payload); // Để debug kiểm tra
+     
         try {
             const response = await fetch('/Admin/Route/SaveRouteAndStops', {
                 method: 'POST',
@@ -316,7 +337,9 @@
             const result = await response.json();
             if (result.success) {
                 showNotification("Route and stops updated successfully!", "success");
-                setTimeout(() => window.location.reload(), 1500);
+                setTimeout(() => {
+        window.location.href = '/Admin/Route';
+    }, 1500);
             } else {
                 showNotification("Failed: " + result.message, "danger");
             }

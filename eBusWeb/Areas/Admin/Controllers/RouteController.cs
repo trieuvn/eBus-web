@@ -24,54 +24,56 @@ namespace eBusWeb.Areas.Admin.Controllers
         {
             const int pageSize = 6;
 
-            // BUILD QUERY 1 LẦN
-            var query = string.IsNullOrWhiteSpace(search)
-                ? _supabase.From<RouteModel>()
-                : _supabase.From<RouteModel>().Where(r => r.Name.Contains(search));
+            // 1. Tạo Query cơ bản
+            var query = _supabase.From<RouteModel>();
 
-            // COUNT
-            var countRes = await query.Get();
-            int totalRoutes = countRes.Models.Count;
-            int totalPages = (int)Math.Ceiling(totalRoutes / (double)pageSize);
+            // 2. Áp dụng Filter nếu có search
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                // Sử dụng ILike để tìm kiếm gần đúng (tương đương CONTAINS)
+                query = (Supabase.Interfaces.ISupabaseTable<RouteModel, Supabase.Realtime.RealtimeChannel>)query.Filter("name", Operator.ILike, $"%{search}%");
+            }
 
-            // PAGING
+            // 3. Thực hiện lấy Count và Data cùng lúc hoặc tuần tự đúng cách
+            // Lưu ý: PostgREST có hỗ trợ đếm trực tiếp trong lúc lấy data để tiết kiệm request
             var routesRes = await query
-                .Range((page - 1) * pageSize, page * pageSize - 1)
+                .Range((page - 1) * pageSize, (page * pageSize) - 1)
+                .Order("id", Ordering.Descending) // Nên có Order khi dùng Paging
                 .Get();
 
             var routes = routesRes.Models;
 
-            // SELECTED ROUTE
-            RouteModel selectedRoute = null;
+            // Lấy tổng số dòng từ Response (Nếu Supabase trả về Count) 
+            // Hoặc query riêng một lần nữa nếu cần chính xác total
+            var totalRoutesRes = await query.Get();
+            int totalRoutes = totalRoutesRes.Models.Count;
 
+            int totalPages = (int)Math.Ceiling(totalRoutes / (double)pageSize);
+
+            // 4. Logic lấy SelectedRoute
+            RouteModel selectedRoute = null;
             if (id.HasValue)
             {
                 selectedRoute = routes.FirstOrDefault(r => r.Id == id.Value)
-                    ?? (await _supabase
-                        .From<RouteModel>()
-                        .Where(r => r.Id == id.Value)
-                        .Get())
-                        .Models.FirstOrDefault();
+                    ?? (await _supabase.From<RouteModel>().Where(r => r.Id == id.Value).Get()).Models.FirstOrDefault();
             }
             else
             {
                 selectedRoute = routes.FirstOrDefault();
             }
 
-            // LOAD STOPS
+            // 5. Load Stops
             var stops = new List<RouteStop>();
-
             if (selectedRoute != null)
             {
-                var stopsRes = await _supabase
-                    .From<RouteStop>()
+                var stopsRes = await _supabase.From<RouteStop>()
                     .Where(s => s.RouteId == selectedRoute.Id)
                     .Order("stop_order", Ordering.Ascending)
                     .Get();
-
                 stops = stopsRes.Models;
             }
 
+            // Gán ViewBag
             ViewBag.Routes = routes;
             ViewBag.SelectedRoute = selectedRoute;
             ViewBag.Stops = stops;
@@ -81,7 +83,6 @@ namespace eBusWeb.Areas.Admin.Controllers
 
             return View();
         }
-
 
         // ======================================================
         // CREATE
@@ -192,17 +193,31 @@ namespace eBusWeb.Areas.Admin.Controllers
         // ======================================================
         // DELETE STOP
         // ======================================================
-        [HttpPost]
-        public async Task<IActionResult> DeleteStop([FromBody] int stopId)
+        // 1. Tạo class hứng dữ liệu
+        public class DeleteRequest
         {
-            if (stopId <= 0) return BadRequest();
+            public int Id { get; set; }
+        }
 
-            await _supabase
-                .From<RouteStop>()
-                .Where(s => s.Id == stopId)
-                .Delete();
+        [HttpPost]
+        public async Task<IActionResult> DeleteStop([FromBody] DeleteRequest request)
+        {
+            // Sử dụng request.Id thay vì stopId
+            if (request == null || request.Id <= 0) return BadRequest(new { success = false, message = "Invalid ID" });
 
-            return Ok(new { success = true });
+            try
+            {
+                await _supabase
+                    .From<RouteStop>()
+                    .Where(s => s.Id == request.Id)
+                    .Delete();
+
+                return Ok(new { success = true, message = "Deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
         }
 
         // ======================================================

@@ -384,7 +384,7 @@ namespace eBusWeb.Areas.Admin.Controllers
 
             return Json(results);
         }
-
+        
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] BookingCreateVM model)
         {
@@ -397,7 +397,7 @@ namespace eBusWeb.Areas.Admin.Controllers
                 var booking = new Booking
                 {
                     UserId = model.UserId,
-                    TripId=1,
+                    TripId=model.TripId,
                     PickupStopId = model.PickupStopId,
                     DropoffStopId = model.DropoffStopId,
                     ContactName = model.ContactName,
@@ -440,7 +440,47 @@ namespace eBusWeb.Areas.Admin.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
+        [HttpGet]
+        public async Task<IActionResult> GetTripsByRoute(long routeId)
+        {
+            try
+            {
+                if (routeId <= 0)
+                {
+                    return Json(new { success = false, trips = new object[] { } });
+                }
+
+                var tripsRes = await _supabase
+                    .From<Trip>()
+                    .Where(t => t.RouteId == routeId)
+                    .Where(t => t.Status == 1) // ACTIVE
+                    .Order(t => t.DepartureTime, Ordering.Ascending)
+                    .Get();
+
+                var trips = tripsRes.Models ?? new List<Trip>();
+
+                return Json(new
+                {
+                    success = true,
+                    trips = trips.Select(t => new
+                    {
+                        id = t.Id,
+                        departureTime = t.DepartureTime.ToString("yyyy-MM-dd HH:mm"),
+                        busType = t.BusType
+                    })
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
 
 
     }
+
 }

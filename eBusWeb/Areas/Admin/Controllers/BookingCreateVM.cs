@@ -3,6 +3,7 @@
 public class BookingCreateVM
 {
     public Guid UserId { get; set; }          // từ Select2
+    public long TripId { get; set; }
 
     public int? PickupStopId { get; set; }
     public int? DropoffStopId { get; set; }

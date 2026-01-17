@@ -131,6 +131,14 @@
                                 </select>
                             </label>
                             <label class="block">
+                                <span class="text-sm font-medium mb-1.5 block">Chuyến đi</span>
+                                <select id="tripSelect"
+                                        class="w-full p-3 rounded-lg border dark:bg-gray-800 dark:border-gray-600"
+                                        disabled>
+                                    <option value="">Chọn chuyến đi</option>
+                                </select>
+                            </label>
+                            <label class="block">
                                 <span class="text-sm font-medium mb-1.5 block">Điểm đón</span>
                                 <select id="pickupStop" class="w-full p-3 rounded-lg border dark:bg-gray-800 dark:border-gray-600" disabled>
                                     <option value="">Chọn điểm đón</option>
@@ -223,7 +231,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="~/dist/js/select2.js"></script>
     <script>
-        // Toast helper
+        /* ================= TOAST ================= */
         function showToast(message, type = 'success') {
             const toast = document.createElement('div');
             toast.className = `toast toast-${type} show`;
@@ -232,8 +240,9 @@
             setTimeout(() => toast.remove(), 4000);
         }
 
-        // Elements
+        /* ================= ELEMENTS ================= */
         const routeSelect = document.getElementById('routeSelect');
+        const tripSelect = document.getElementById('tripSelect');
         const pickupSelect = document.getElementById('pickupStop');
         const dropoffSelect = document.getElementById('dropoffStop');
         const addPassengerBtn = document.getElementById('addPassengerBtn');
@@ -242,27 +251,57 @@
         const passengerBody = document.getElementById('passengerTableBody');
         const totalAmountInput = document.getElementById('totalAmount');
 
-        let passengerCount = 0;
         const PRICE_PER_SEAT = 150000;
+        let passengerCount = 0;
+
+        /* ================= PASSENGERS ================= */
+        function updateTotalAmount() {
+            totalAmountInput.value = passengerCount * PRICE_PER_SEAT;
+        }
 
         function addPassengerRow() {
             passengerCount++;
+
             const row = document.createElement('tr');
-            row.className = 'hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors';
-            row.innerHTML = `
-                <td class="px-6 py-4">
-                    <input type="text" class="passenger-name w-full p-2.5 border rounded-lg dark:bg-gray-800 dark:border-gray-600" placeholder="Họ và tên" required />
-                </td>
-                <td class="px-6 py-4">
-                    <input type="text" class="passenger-seat w-24 p-2.5 border rounded-lg dark:bg-gray-800 dark:border-gray-600 font-medium text-primary" placeholder="A01" maxlength="4" required />
-                </td>
-                <td class="px-6 py-4 text-right">
-                    <button type="button" class="delete-passenger text-gray-400 hover:text-red-500 transition p-1">
-                        <span class="material-symbols-outlined">delete</span>
-                    </button>
-                </td>
-            `;
-            passengerBody.appendChild(row);
+                   row.innerHTML = `
+            <td class="px-4 py-3">
+                <input
+                    type="text"
+                    class="passenger-name w-full bg-transparent text-gray-800 dark:text-gray-100
+                           placeholder-gray-400 dark:placeholder-gray-500
+                           focus:outline-none focus:ring-0"
+                    placeholder="Họ và tên"
+                    required
+                />
+            </td>
+
+            <td class="px-4 py-3">
+                <input
+                    type="text"
+                    class="passenger-seat w-20 text-center bg-transparent font-semibold
+                           text-indigo-600 dark:text-indigo-400
+                           placeholder-gray-400
+                           focus:outline-none focus:ring-0"
+                    placeholder="A01"
+                    maxlength="4"
+                    required
+                />
+            </td>
+
+            <td class="px-4 py-3 text-right">
+                <button
+                    type="button"
+                    class="delete-passenger p-2 rounded-full
+                           text-gray-400 hover:text-red-500
+                           hover:bg-red-50 dark:hover:bg-red-500/10
+                           transition-all duration-200">
+                    <span class="material-symbols-outlined text-[20px]">
+                        delete
+                    </span>
+                </button>
+            </td>
+        `;
+
 
             row.querySelector('.delete-passenger').onclick = () => {
                 row.remove();
@@ -270,113 +309,126 @@
                 updateTotalAmount();
             };
 
-            row.querySelector('.passenger-name').focus();
+            passengerBody.appendChild(row);
             updateTotalAmount();
         }
 
-        function updateTotalAmount() {
-            totalAmountInput.value = passengerCount * PRICE_PER_SEAT;
-        }
+        addPassengerBtn.addEventListener('click', addPassengerRow);
+        addPassengerRow();
 
-        // Load stops
+        /* ================= LOAD TRIPS ================= */
         routeSelect.addEventListener('change', async () => {
-            const routeId = routeSelect.value.trim();
-            if (!routeId) {
-                pickupSelect.innerHTML = '<option value="">Chọn điểm đón</option>';
-                dropoffSelect.innerHTML = '<option value="">Chọn điểm trả</option>';
-                pickupSelect.disabled = true;
-                dropoffSelect.disabled = true;
-                return;
-            }
+            const routeId = routeSelect.value;
 
+            tripSelect.innerHTML = '<option value="">Đang tải chuyến...</option>';
+            tripSelect.disabled = true;
+
+            pickupSelect.innerHTML = '<option value="">Chọn điểm đón</option>';
+            dropoffSelect.innerHTML = '<option value="">Chọn điểm trả</option>';
             pickupSelect.disabled = true;
             dropoffSelect.disabled = true;
-            pickupSelect.innerHTML = '<option value="">Đang tải...</option>';
-            dropoffSelect.innerHTML = '<option value="">Đang tải...</option>';
+
+            if (!routeId) return;
 
             try {
-                const res = await fetch(`/Admin/Booking/GetStopsByRoute?routeId=${routeId}`);
-                if (!res.ok) throw new Error(`Lỗi server ${res.status}`);
+                /* Trips */
+                const tripRes = await fetch(`/Admin/Booking/GetTripsByRoute?routeId=${routeId}`);
+                const tripData = await tripRes.json();
 
-                const data = await res.json();
+                if (!tripData.success || tripData.trips.length === 0) {
+                    tripSelect.innerHTML = '<option value="">Không có chuyến</option>';
+                    return;
+                }
 
-                if (!data.success) throw new Error(data.message || 'Không tải được danh sách điểm dừng');
+                tripSelect.innerHTML =
+                    '<option value="">Chọn chuyến đi</option>' +
+                    tripData.trips.map(t =>
+                        `<option value="${t.id}">
+                            ${t.departureTime} | ${t.busType}
+                        </option>`
+                    ).join('');
 
-                const stops = data.stops || [];
-                        if (stops.length === 0) {
-            pickupSelect.innerHTML = '<option value="">Tuyến này chưa có điểm đón</option>';
-            dropoffSelect.innerHTML = '<option value="">Tuyến này chưa có điểm trả</option>';
-            pickupSelect.disabled = true;
-            dropoffSelect.disabled = true;
-            showToast('Tuyến này chưa cấu hình điểm dừng', 'error');
-            return;
-        }
-            const options = stops.map(s =>
-            `<option value="${s.id}">${s.name}</option>`
-        ).join('');
+                tripSelect.disabled = false;
 
-                pickupSelect.innerHTML = `<option value="">Chọn điểm đón</option>${options}`;
-                dropoffSelect.innerHTML = `<option value="">Chọn điểm trả</option>${options}`;
+                /* Stops */
+                const stopRes = await fetch(`/Admin/Booking/GetStopsByRoute?routeId=${routeId}`);
+                const stopData = await stopRes.json();
+
+                if (!stopData.success || stopData.stops.length === 0) {
+                    showToast('Tuyến chưa có điểm dừng', 'error');
+                    return;
+                }
+
+                const stopOptions = stopData.stops
+                    .map(s => `<option value="${s.id}">${s.name}</option>`)
+                    .join('');
+
+                pickupSelect.innerHTML = '<option value="">Chọn điểm đón</option>' + stopOptions;
+                dropoffSelect.innerHTML = '<option value="">Chọn điểm trả</option>' + stopOptions;
 
                 pickupSelect.disabled = false;
                 dropoffSelect.disabled = false;
 
             } catch (err) {
-                console.error('Lỗi tải điểm dừng:', err);
-                showToast('Không thể tải danh sách điểm dừng: ' + err.message, 'error');
-                pickupSelect.innerHTML = '<option value="">Lỗi tải dữ liệu</option>';
-                dropoffSelect.innerHTML = '<option value="">Lỗi tải dữ liệu</option>';
+                console.error(err);
+                showToast('Lỗi tải dữ liệu', 'error');
             }
         });
 
-        // Add passenger initial
-        addPassengerBtn.addEventListener('click', addPassengerRow);
-        addPassengerRow(); // Default 1 passenger
+        /* ================= SELECT2 ================= */
+        $(document).ready(function () {
+            $('#contactName').select2({
+                placeholder: 'Chọn người liên hệ',
+                allowClear: true,
+                width: '100%',
+                minimumInputLength: 1,
+                ajax: {
+                    url: '/Admin/Booking/GetForSelect2',
+                    dataType: 'json',
+                    delay: 300,
+                    data: params => ({ q: params.term }),
+                    processResults: data => ({ results: data })
+                }
+            });
+        });
 
-        // Confirm booking
+        /* ================= CONFIRM BOOKING ================= */
         confirmBtn.addEventListener('click', async () => {
-            confirmBtn.disabled = true;
-            loadingSpinner.classList.remove('hidden');
-            confirmBtn.textContent = 'Đang xử lý...';
-
             try {
-                if (!routeSelect.value) throw new Error('Vui lòng chọn tuyến đường');
-                if (!pickupSelect.value || !dropoffSelect.value) throw new Error('Vui lòng chọn điểm đón và trả');
-                if (pickupSelect.value === dropoffSelect.value) throw new Error('Điểm đón và trả không được trùng nhau');
+                confirmBtn.disabled = true;
+                loadingSpinner.classList.remove('hidden');
 
-                        const contactData = $('#contactName').select2('data');
+                if (!routeSelect.value) throw new Error('Chưa chọn tuyến');
+                if (!tripSelect.value) throw new Error('Chưa chọn chuyến');
+                if (!pickupSelect.value || !dropoffSelect.value)
+                    throw new Error('Chưa chọn điểm đón/trả');
+                if (pickupSelect.value === dropoffSelect.value)
+                    throw new Error('Điểm đón và trả trùng nhau');
 
-        if (!contactData || contactData.length === 0) {
-            throw new Error('Vui lòng chọn người liên hệ');
-        }
-
-                const contactUserId = contactData[0].id;   // GUID
-        const contactName = contactData[0].text;   // tên hiển thị
-
-        if (!contactUserId) {
-            throw new Error('Người liên hệ không hợp lệ');
-        }
-
+                const contactData = $('#contactName').select2('data');
+                if (!contactData.length) throw new Error('Chưa chọn người liên hệ');
 
                 const passengers = [];
                 passengerBody.querySelectorAll('tr').forEach(row => {
-                    const name = row.querySelector('.passenger-name')?.value?.trim();
-                    const seat = row.querySelector('.passenger-seat')?.value?.trim();
+                    const name = row.querySelector('.passenger-name').value.trim();
+                    const seat = row.querySelector('.passenger-seat').value.trim();
                     if (name && seat) passengers.push({ fullName: name, seatNumber: seat });
                 });
 
-                if (passengers.length === 0) throw new Error('Vui lòng thêm ít nhất 1 hành khách');
+                if (passengers.length === 0)
+                    throw new Error('Chưa có hành khách');
 
-                        const payload = {
-            userId: contactUserId,                     // ✅ ROOT                // nếu chưa có Trip thì để 0 hoặc null
-            pickupStopId: parseInt(pickupSelect.value),
-            dropoffStopId: parseInt(dropoffSelect.value),
-            contactName: contactName,
-            contactMobile: null,
-            contactEmail: null,
-            totalAmount: parseInt(totalAmountInput.value),
-            passengers: passengers
-        };
+                const payload = {
+                    userId: contactData[0].id,
+                    tripId: Number(tripSelect.value), // 🔥 QUAN TRỌNG
+                    pickupStopId: Number(pickupSelect.value),
+                    dropoffStopId: Number(dropoffSelect.value),
+                    contactName: contactData[0].text,
+                    contactMobile: null,
+                    contactEmail: null,
+                    totalAmount: Number(totalAmountInput.value),
+                    passengers: passengers
+                };
 
                 const res = await fetch('/Admin/Booking/Create', {
                     method: 'POST',
@@ -385,48 +437,20 @@
                 });
 
                 const result = await res.json();
+                if (!result.success) throw new Error(result.message);
 
-                if (result.success) {
-                    showToast('Tạo booking thành công!', 'success');
-                    window.location.href = result.redirectUrl || '/Admin/Booking';
-                } else {
-                    throw new Error(result.message || 'Tạo booking thất bại');
-                }
+                showToast('Tạo booking thành công!');
+                window.location.href = result.redirectUrl || '/Admin/Booking';
+
             } catch (err) {
-                showToast('Lỗi: ' + err.message, 'error');
-                console.error(err);
+                showToast(err.message, 'error');
             } finally {
                 confirmBtn.disabled = false;
                 loadingSpinner.classList.add('hidden');
-                confirmBtn.textContent = 'Xác nhận Booking';
             }
         });
-        $(document).ready(function () {
-            $('#contactName').select2({
-                placeholder: 'Chọn người liên hệ',
-                allowClear: true,
-                width: '100%',
-                minimumInputLength: 1, // gõ ít nhất 1 ký tự
-                ajax: {
-                    url: '/Admin/Booking/GetForSelect2',
-                    dataType: 'json',
-                    delay: 300,
-                    data: function (params) {
-                        return {
-                            q: params.term // từ khóa search
-                        };
-                    },
-                    processResults: function (data) {
-                        return {
-                            results: data // [{id, text}]
-                        };
-                    },
-                    cache: true
-                }
-            });
-        });
-
     </script>
+
 
 
 </body>

@@ -105,8 +105,6 @@ namespace eBusWeb.Areas.Admin.Controllers
             return View();
         }
         [HttpPost]
-        // Xóa [ValidateAntiForgeryToken] nếu bạn không gửi token trong header, 
-        // hoặc giữ lại nếu bạn gửi token qua 'RequestVerificationToken' header
         public async Task<IActionResult> Create([FromBody] RouteCreateViewModel model)
         {
             if (model == null || string.IsNullOrEmpty(model.Name))
@@ -116,19 +114,27 @@ namespace eBusWeb.Areas.Admin.Controllers
 
             try
             {
-                // Logic lưu vào Supabase
                 int totalDuration = (model.Hours * 60) + model.Minutes;
 
                 var newRoute = new Route
                 {
                     Name = model.Name,
                     EstDuration = totalDuration
+                    // Đảm bảo không gán giá trị cho Id ở đây để DB tự sinh
                 };
 
+                // Sử dụng Insert để lấy về kết quả
                 var routeResponse = await _supabase.From<Route>().Insert(newRoute);
-                var createdRoute = routeResponse.Model;
 
-                if (createdRoute != null && model.Stops != null)
+                // Kiểm tra xem Insert có thành công không
+                if (routeResponse.Models.Count == 0)
+                {
+                    return StatusCode(500, "Không thể tạo Route trong cơ sở dữ liệu.");
+                }
+
+                var createdRoute = routeResponse.Models[0];
+
+                if (model.Stops != null && model.Stops.Any())
                 {
                     var routeStops = model.Stops.Select(s => new RouteStop
                     {
@@ -141,12 +147,12 @@ namespace eBusWeb.Areas.Admin.Controllers
                     await _supabase.From<RouteStop>().Insert(routeStops);
                 }
 
-                // Trả về kết quả thành công để JS xử lý redirect
                 return Ok(new { success = true });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                // Trả về thông báo lỗi chi tiết để bạn thấy ở F12 Console
+                return StatusCode(500, new { error = ex.Message, stack = ex.StackTrace });
             }
         }
         [HttpPost]

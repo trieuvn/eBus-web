@@ -7,7 +7,7 @@ namespace eBusWeb.Models
     [Table("User")]
     public class User : BaseModel
     {
-        [PrimaryKey("id", false)]
+        [PrimaryKey("id", shouldInsert: true)]
         public Guid Id { get; set; }
 
         [Column("email")]
@@ -26,7 +26,7 @@ namespace eBusWeb.Models
         public int Role { get; set; }
 
         [Column("authid")]
-        public Guid AuthId { get; set; }
+        public Guid? AuthId { get; set; }
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; }

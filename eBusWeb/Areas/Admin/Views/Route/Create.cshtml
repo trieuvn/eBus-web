@@ -183,234 +183,144 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    // Logic JS để Save Route
-    document.getElementById('btnSaveRoute').addEventListener('click', async function () {
-        const btn = this;
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+    document.addEventListener('DOMContentLoaded', () => {
 
-        const payload = {
-            name: document.getElementById('txtRouteName').value,
-            hours: parseInt(document.getElementById('numHours').value) || 0,
-            minutes: parseInt(document.getElementById('numMinutes').value) || 0,
-            stops: []
-        };
-
-        // Quét toàn bộ trạm dừng trong container
-        const stopRows = document.querySelectorAll('#stopsContainer .stop-item');
-        stopRows.forEach((row, index) => {
-            payload.stops.push({
-                locationName: row.querySelector('.input-location').value,
-                time: row.querySelector('.input-time').value,
-                stopOrder: index + 1,
-                stopType: parseInt(row.getAttribute('data-stop-type'))
-            });
-        });
-
-        try {
-            const response = await fetch('/Admin/Route/Create', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (response.ok) {
-                window.location.href = '/Admin/Route'; // Thành công thì chuyển hướng
-            } else {
-                alert('Failed to save route. Please check data.');
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-save me-2"></i> Save Route';
-            }
-        } catch (error) {
-            console.error(error);
-            btn.disabled = false;
-        }
-    });
-</script>
-
-
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // === 1. KHAI BÁO CÁC PHẦN TỬ ===
+        /* ========= ELEMENTS ========= */
         const stopsContainer = document.getElementById('stopsContainer');
-        const btnAddStop = document.getElementById('btnAddStop');
-        const lblStopCount = document.getElementById('lblStopCount');
         const emptyState = document.getElementById('emptyState');
+        const btnAddStop = document.getElementById('btnAddStop');
         const btnSaveRoute = document.getElementById('btnSaveRoute');
+        const lblStopCount = document.getElementById('lblStopCount');
 
-        // === 2. HÀM CẬP NHẬT GIAO DIỆN (Đếm số, Đánh dấu loại trạm) ===
+        /* ========= UI UPDATE ========= */
         function updateUI() {
             const stops = stopsContainer.querySelectorAll('.stop-item');
-            const totalStops = stops.length;
+            const total = stops.length;
 
-            // Cập nhật Badge số lượng (Xử lý trường hợp 0, 1 hoặc nhiều trạm)
-            if (lblStopCount) {
-                lblStopCount.textContent = `${totalStops} ${totalStops === 1 ? 'Stop' : 'Stops'} Added`;
-            }
+            lblStopCount.textContent = `${total} ${total === 1 ? 'Stop' : 'Stops'} Added`;
+            emptyState.style.display = total === 0 ? 'block' : 'none';
 
-            // Ẩn/Hiện trạng thái trống
-            if (totalStops > 0) {
-                if (emptyState) emptyState.style.display = 'none';
-            } else {
-                if (emptyState) emptyState.style.display = 'block';
-            }
-
-            // Đánh số thứ tự và phân loại loại trạm (1: Đầu, 2: Giữa, 3: Cuối)
             stops.forEach((stop, index) => {
-                // Cập nhật số thứ tự hiển thị
-                const numDisplay = stop.querySelector('.stop-number');
-                if (numDisplay) numDisplay.textContent = index + 1;
-
-                // Reset CSS border mặc định
+                stop.querySelector('.stop-number').textContent = index + 1;
                 stop.classList.remove('border-start', 'border-primary', 'border-4');
 
                 if (index === 0) {
-                    // Trạm đầu tiên
-                    stop.setAttribute('data-stop-type', '1');
-                } else if (index === totalStops - 1) {
-                    // Trạm cuối cùng (chỉ áp dụng nếu có từ 2 trạm trở lên)
-                    stop.setAttribute('data-stop-type', '3');
+                    stop.dataset.stopType = 1; // Origin
+                } else if (index === total - 1) {
+                    stop.dataset.stopType = 3; // Destination
                     stop.classList.add('border-start', 'border-primary', 'border-4');
                 } else {
-                    // Các trạm ở giữa
-                    stop.setAttribute('data-stop-type', '2');
+                    stop.dataset.stopType = 2; // Middle
                 }
             });
         }
 
-        // === 3. LOGIC THÊM TRẠM DỪNG (POPUP) ===
-        btnAddStop.addEventListener('click', async function () {
-            const { value: formValues } = await Swal.fire({
+        /* ========= ADD STOP ========= */
+        btnAddStop.addEventListener('click', async () => {
+
+            const result = await Swal.fire({
                 title: 'Add New Stop',
-                html:
-                    '<div class="text-start">' +
-                    '<label class="swal2-label fw-bold small text-muted">LOCATION NAME</label>' +
-                    '<input id="swal-input1" class="swal2-input mt-1" placeholder="e.g. Philadelphia, PA">' +
-                    '<label class="swal2-label fw-bold small text-muted mt-3">ARRIVAL/DEPARTURE TIME</label>' +
-                    '<input id="swal-input2" type="time" class="swal2-input mt-1">' +
-                    '</div>',
+                html: `
+                    <label class="fw-bold small text-muted">LOCATION NAME</label>
+                    <input id="swal-loc" class="swal2-input" placeholder="e.g. Philadelphia">
+                `,
                 focusConfirm: false,
                 showCancelButton: true,
-                confirmButtonText: 'Add Stop',
-                cancelButtonText: 'Cancel',
-                customClass: {
-                    confirmButton: 'btn btn-primary px-4',
-                    cancelButton: 'btn btn-link text-muted'
-                },
-                buttonsStyling: false,
+                confirmButtonText: 'Add',
                 preConfirm: () => {
-                    const loc = document.getElementById('swal-input1').value;
-                    const time = document.getElementById('swal-input2').value;
-                    if (!loc || !time) {
-                        Swal.showValidationMessage('Please enter both location and time');
+                    const loc = document.getElementById('swal-loc').value.trim();
+                    if (!loc) {
+                        Swal.showValidationMessage('Location name is required');
+                        return false;
                     }
-                    return { location: loc, time: time };
+                    return loc;
                 }
             });
 
-            if (formValues) {
-                addStopToUI(formValues.location, formValues.time);
-            }
-        });
+            if (!result.isConfirmed) return;
 
-        function addStopToUI(location, time) {
-            const stopHtml = `
+            const stopHTML = `
                 <div class="stop-item p-3 mb-2 d-flex align-items-center gap-3 bg-white shadow-sm border rounded">
-                    <i class="fa-solid fa-grip-vertical text-muted opacity-50"></i>
+                    <i class="fa-solid fa-grip-vertical text-muted"></i>
                     <div class="stop-number"></div>
                     <div class="flex-grow-1">
-                        <input class="form-control form-control-sm border-0 bg-light input-location" value="${location}">
+                        <input class="form-control form-control-sm border-0 bg-light input-location" value="${result.value}">
                     </div>
-                    <div style="width:120px">
-                        <input type="time" class="form-control form-control-sm border-0 bg-light input-time" value="${time}">
-                    </div>
-                    <button class="btn btn-link text-danger p-0 btn-remove-stop" title="Remove stop">
-                        <i class="fa-solid fa-trash-can"></i>
+                    <button type="button" class="btn btn-link text-danger p-0 btn-remove-stop">
+                        <i class="fa-solid fa-trash"></i>
                     </button>
                 </div>
             `;
 
-            const stops = stopsContainer.querySelectorAll('.stop-item');
-            // Logic chèn: Nếu đã có Destination (trạm cuối), chèn vào TRƯỚC nó. Ngược lại chèn cuối.
-            if (stops.length >= 2) {
-                stops[stops.length - 1].insertAdjacentHTML('beforebegin', stopHtml);
-            } else {
-                stopsContainer.insertAdjacentHTML('beforeend', stopHtml);
-            }
-
+            stopsContainer.insertAdjacentHTML('beforeend', stopHTML);
             updateUI();
-        }
-
-        // === 4. XỬ LÝ XÓA TRẠM ===
-        stopsContainer.addEventListener('click', function (e) {
-            if (e.target.closest('.btn-remove-stop')) {
-                const item = e.target.closest('.stop-item');
-                item.style.opacity = '0';
-                item.style.transform = 'translateX(20px)';
-                item.style.transition = 'all 0.3s';
-
-                setTimeout(() => {
-                    item.remove();
-                    updateUI();
-                }, 300);
-            }
         });
 
-        // === 5. LOGIC LƯU DỮ LIỆU (SAVE ROUTE) ===
+        /* ========= REMOVE STOP ========= */
+        stopsContainer.addEventListener('click', e => {
+            const btn = e.target.closest('.btn-remove-stop');
+            if (!btn) return;
+
+            btn.closest('.stop-item').remove();
+            updateUI();
+        });
+
+        /* ========= SAVE ROUTE ========= */
         btnSaveRoute.addEventListener('click', async function () {
+
+            const routeName = document.getElementById('txtRouteName').value.trim();
+            const hours = parseInt(document.getElementById('numHours').value) || 0;
+            const minutes = parseInt(document.getElementById('numMinutes').value) || 0;
             const stops = stopsContainer.querySelectorAll('.stop-item');
 
-            // Validation cơ bản
-            if (stops.length < 2) {
-                Swal.fire('Error', 'A route must have at least an origin and a destination.', 'error');
+            if (!routeName) {
+                Swal.fire('Validation Error', 'Route name is required.', 'warning');
                 return;
             }
 
-            const btn = this;
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+            if (stops.length < 2) {
+                Swal.fire('Validation Error', 'At least 2 stops required.', 'warning');
+                return;
+            }
 
-            const payload = {
-                name: document.getElementById('txtRouteName').value,
-                hours: parseInt(document.getElementById('numHours').value) || 0,
-                minutes: parseInt(document.getElementById('numMinutes').value) || 0,
-                type: document.getElementById('selRouteType').value,
-                stops: Array.from(stops).map((row, index) => ({
-                    locationName: row.querySelector('.input-location').value,
-                    time: row.querySelector('.input-time').value,
-                    stopOrder: index + 1,
-                    stopType: parseInt(row.getAttribute('data-stop-type'))
-                }))
-            };
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
+
+                const payload = {
+        name: routeName,
+        hours: hours,
+        minutes: minutes,
+        stops: Array.from(stops).map((stop, index) => ({
+            locationName: stop.querySelector('.input-location').value.trim(),
+            stopOrder: index + 1,
+            stopType: Number(stop.dataset.stopType)
+        }))
+    };
 
             try {
-                const response = await fetch('/Admin/Route/Create', {
+                const res = await fetch('/Admin/Route/Create', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
 
-                if (response.ok) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Saved!',
-                        text: 'Route created successfully.',
-                        timer: 1500,
-                        showConfirmButton: false
-                    }).then(() => {
-                        window.location.href = '/Admin/Route';
-                    });
-                } else {
-                    throw new Error('Server error');
-                }
-            } catch (error) {
-                Swal.fire('Failed', 'Could not save the route. Please try again.', 'error');
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-save me-2"></i> Save Route';
+                if (!res.ok) throw new Error();
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Saved!',
+                    timer: 1200,
+                    showConfirmButton: false
+                }).then(() => location.href = '/Admin/Route');
+
+            } catch {
+                Swal.fire('Error', 'Failed to save route.', 'error');
+                this.disabled = false;
+                this.innerHTML = '<i class="fa-solid fa-save me-2"></i> Save Route';
             }
         });
 
-        // KHỞI TẠO BAN ĐẦU
         updateUI();
     });
 </script>
+

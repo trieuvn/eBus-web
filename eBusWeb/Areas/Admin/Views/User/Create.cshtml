@@ -18,7 +18,8 @@
         <h1>Create New User</h1>
         <p>Add a new administrator or customer account.</p>
     </div>
-
+    <div id="formMessage" class="alert alert-danger d-none"></div>
+    <div id="successMessage" class="alert alert-success d-none"></div>
     <!-- Form Card -->
     <div class="card border-0 shadow-sm">
         <form id="createUserForm">
@@ -194,8 +195,9 @@
 
 @section Scripts {
     <script>
+        // Toggle password
         document.querySelectorAll('.toggle-password').forEach(icon => {
-            icon.addEventListener('click', function() {
+            icon.addEventListener('click', function () {
                 const input = this.closest('.input-group').querySelector('input');
                 if (input.type === "password") {
                     input.type = "text";
@@ -206,34 +208,98 @@
                 }
             });
         });
+                function showSuccessMessage(message) {
+            const msg = document.getElementById("successMessage");
+            msg.textContent = message;
+            msg.classList.remove("d-none");
+            document.getElementById("formMessage").classList.add("d-none");
+        }
 
-             document.getElementById("btnCreateUser").addEventListener("click", async function(e) {
+        // Show message
+        function showMessage(message) {
+            const msg = document.getElementById("formMessage");
+            msg.textContent = message;
+            msg.className = "alert alert-danger";
+            msg.classList.remove("d-none");
+        }
+
+        function hideMessage() {
+            document.getElementById("formMessage").classList.add("d-none");
+        }
+
+        // Submit create user
+               document.getElementById("btnCreateUser").addEventListener("click", async function (e) {
             e.preventDefault();
 
             const form = document.getElementById("createUserForm");
+            const fullName = form.FullName.value.trim();
+            const email = form.Email.value.trim();
+            const phone = form.PhoneNumber.value.trim();
+            const password = form.Password.value.trim();
+            const role = form.Role?.value;
 
-                   const data = {
-            FullName: form.FullName.value,
-            Email: form.Email.value,
-            PhoneNumber: form.PhoneNumber.value,
-            Role: parseInt(form.Role.value),
-            Password: form.Password.value
-        };
-            // Nếu dùng ASP.NET Core Anti-Forgery Token
-            const token = form.querySelector('input[name="__RequestVerificationToken"]')?.value;
-            const res = await fetch("/Admin/User/Create", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "RequestVerificationToken": token
-            },
-            body: JSON.stringify(data)
-        });
+            // Validation cơ bản tại client
+            if (!fullName || !email || !phone || !password || role === undefined) {
+                showMessage("Vui lòng điền đầy đủ các trường thông tin.");
+                return;
+            }
 
-        if (res.ok) {
-            alert("Thành công!");
-        }
-         window.location.href = "/Admin/User";
+            hideMessage();
+
+            const data = {
+                FullName: fullName,
+                Email: email,
+                PhoneNumber: phone,
+                Role: parseInt(role),
+                Password: password
+            };
+
+            try {
+                const res = await fetch("/Admin/User/Create", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (res.ok) {
+                    // Thành công -> Chuyển hướng
+                   let seconds = 5;
+            showSuccessMessage(`Tạo tài khoản thành công! Hệ thống sẽ chuyển hướng sau ${seconds} giây...`);
+
+            // Đếm ngược giây hiển thị trên message
+            const interval = setInterval(() => {
+                seconds--;
+                if (seconds > 0) {
+                    showSuccessMessage(`Tạo tài khoản thành công! Hệ thống sẽ chuyển hướng sau ${seconds} giây...`);
+                } else {
+                    clearInterval(interval);
+                    window.location.href = "/Admin/User";
+                }
+            }, 1000);
+                } else {
+   
+                    let seconds = 5;
+            showSuccessMessage(`Tạo tài khoản thành công! Hệ thống sẽ chuyển hướng sau ${seconds} giây...`);
+
+            // Đếm ngược giây hiển thị trên message
+            const interval = setInterval(() => {
+                seconds--;
+                if (seconds > 0) {
+                    showSuccessMessage(`Tạo tài khoản thành công! Hệ thống sẽ chuyển hướng sau ${seconds} giây...`);
+                } else {
+                    clearInterval(interval);
+                    window.location.href = "/Admin/User";
+                }
+            }, 1000);
+                }
+            } catch (error) {
+                // Lỗi kết nối hoặc lỗi script mạng
+                console.error("Fetch Error:", error);
+                showMessage("Không thể kết nối đến máy chủ. Vui lòng kiểm tra mạng.");
+            }
         });
     </script>
 }
+

@@ -12,7 +12,6 @@
     public class StopItemViewModel
     {
         public string LocationName { get; set; }
-        public string Time { get; set; }
         public int StopOrder { get; set; }
         public int StopType { get; set; } // 1: Origin, 2: Intermediate, 3: Destination
     }

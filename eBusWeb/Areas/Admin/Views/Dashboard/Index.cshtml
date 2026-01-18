@@ -1,194 +1,248 @@
-﻿
-
-@{
+﻿@{
     Layout = "_LayoutAdmin";
     ViewData["Title"] = "Dashboard";
 }
 
-<div class="container-fluid py-4">
+<style>
+    /* ===== GLOBAL SCALE ===== */
+    .dashboard {
+        font-size: 0.9rem;
+    }
+
+    /* ===== KPI ===== */
+    .kpi-card h3 {
+        font-size: 1.4rem;
+        margin-bottom: .25rem;
+    }
+
+    /* ===== QUICK ACTION ===== */
+    .quick-action {
+        min-height: 110px;
+        transition: all .2s ease;
+    }
+
+        .quick-action i {
+            font-size: 1.25rem;
+        }
+
+        .quick-action strong {
+            font-size: .85rem;
+        }
+
+        .quick-action small {
+            font-size: .75rem;
+        }
+
+        .quick-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 .4rem .8rem rgba(0,0,0,.12);
+        }
+
+    /* ===== CHART ===== */
+    .chart-simple span {
+        max-width: 18px;
+        width: 100%;
+        background: var(--bs-primary);
+        border-radius: 5px 5px 0 0;
+        display: inline-block;
+    }
+
+    .chart-labels span {
+        font-size: 10px;
+        max-width: 60px;
+        line-height: 1.2;
+        white-space: normal; /* cho xuống dòng */
+        overflow: hidden;
+        text-align: center;
+        word-break: break-word; /* bẻ chữ dài */
+    }
+
+
+    /* ===== TABLE ===== */
+    .table th,
+    .table td {
+        padding-top: .45rem;
+        padding-bottom: .45rem;
+        font-size: .85rem;
+    }
+</style>
+
+<div class="container-fluid py-3 dashboard">
 
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
-            <h2 class="fw-bold mb-1">
+            <h5 class="fw-bold mb-0">
                 <i class="bi bi-speedometer2 text-primary me-2"></i>
                 Admin Dashboard
-            </h2>
-            <p class="text-muted mb-0">Overview of system performance & daily operations</p>
+            </h5>
+            <small class="text-muted">
+                System overview & daily operations
+            </small>
         </div>
-        <a href="/Admin/Dashboard/ExportPdf"
-           class="btn btn-outline-primary btn-sm shadow-sm">
-            <i class="bi bi-download me-1"></i> Export Report
-        </a>
 
+        <a href="/Admin/Dashboard/ExportPdf"
+           class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-download me-1"></i> Export
+        </a>
     </div>
 
     <!-- KPI Cards -->
-    <div class="row g-3 mb-4">
+    <div class="row g-3 mb-3">
 
-        <!-- Total Revenue -->
         <div class="col-xl-3 col-md-6">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
+            <div class="card border-0 shadow-sm kpi-card">
+                <div class="card-body py-3">
                     <div class="d-flex justify-content-between">
-                        <span class="text-muted small fw-semibold">TOTAL REVENUE</span>
-                        <i class="bi bi-currency-dollar text-primary fs-4"></i>
+                        <small class="text-muted fw-semibold">REVENUE</small>
+                        <i class="bi bi-currency-dollar text-primary"></i>
                     </div>
-                    <h3 class="fw-bold mt-2">$@Model.TotalRevenue</h3>
-                    <span class="text-success small fw-semibold">
-                        <i class="bi bi-arrow-up-right"></i>
-                        @Model.RevenueGrowthPercent% this month
-                    </span>
+                    <h3 class="fw-bold">$@Model.TotalRevenue</h3>
+                    <small class="text-success">
+                        +@Model.RevenueGrowthPercent%
+                    </small>
                 </div>
             </div>
         </div>
 
-        <!-- Total Bookings -->
         <div class="col-xl-3 col-md-6">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
+            <div class="card border-0 shadow-sm kpi-card">
+                <div class="card-body py-3">
                     <div class="d-flex justify-content-between">
-                        <span class="text-muted small fw-semibold">TOTAL BOOKINGS</span>
-                        <i class="bi bi-ticket-perforated text-primary fs-4"></i>
+                        <small class="text-muted fw-semibold">BOOKINGS</small>
+                        <i class="bi bi-ticket-perforated text-primary"></i>
                     </div>
-                    <h3 class="fw-bold mt-2">@Model.TotalBookings</h3>
-                    <span class="text-success small fw-semibold">
-                        <i class="bi bi-arrow-up-right"></i>
-                        @Model.BookingGrowthPercent% this week
-                    </span>
+                    <h3 class="fw-bold">@Model.TotalBookings</h3>
+                    <small class="text-success">
+                        +@Model.BookingGrowthPercent%
+                    </small>
                 </div>
             </div>
         </div>
 
-        <!-- Active Routes -->
         <div class="col-xl-3 col-md-6">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
+            <div class="card border-0 shadow-sm kpi-card">
+                <div class="card-body py-3">
                     <div class="d-flex justify-content-between">
-                        <span class="text-muted small fw-semibold">ACTIVE ROUTES</span>
-                        <i class="bi bi-map text-primary fs-4"></i>
+                        <small class="text-muted fw-semibold">ROUTES</small>
+                        <i class="bi bi-map text-primary"></i>
                     </div>
-                    <h3 class="fw-bold mt-2">@Model.ActiveRoutes</h3>
-                    <span class="text-muted small">No changes</span>
+                    <h3 class="fw-bold">@Model.ActiveRoutes</h3>
+                    <small class="text-muted">Stable</small>
                 </div>
             </div>
         </div>
 
-        <!-- Pending Payments -->
         <div class="col-xl-3 col-md-6">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
+            <div class="card border-0 shadow-sm kpi-card">
+                <div class="card-body py-3">
                     <div class="d-flex justify-content-between">
-                        <span class="text-muted small fw-semibold">PENDING PAYMENTS</span>
-                        <i class="bi bi-exclamation-circle text-warning fs-4"></i>
+                        <small class="text-muted fw-semibold">PENDING</small>
+                        <i class="bi bi-exclamation-circle text-warning"></i>
                     </div>
-                    <h3 class="fw-bold mt-2">$@Model.PendingPayments</h3>
-                    <span class="text-warning small fw-semibold">Action required</span>
+                    <h3 class="fw-bold">$@Model.PendingPayments</h3>
+                    <small class="text-warning">Action needed</small>
                 </div>
             </div>
         </div>
 
     </div>
-    <div class="row g-3 mb-4">
+
+    <!-- Quick Actions -->
+    <div class="row g-3 mb-3">
 
         <div class="col-md-3">
             <a href="/Admin/Route/Create"
-               class="btn btn-primary w-100 py-3 shadow-sm quick-action text-decoration-none
-                  d-flex flex-column align-items-center justify-content-center gap-1">
-                <i class="bi bi-plus-circle fs-4"></i>
-                <strong class="small">Add Route</strong>
-                <small class="opacity-75">Create new route</small>
+               class="btn btn-primary w-100 quick-action
+                      d-flex flex-column justify-content-center align-items-center gap-1 text-decoration-none">
+                <i class="bi bi-plus-circle"></i>
+                <strong>Add Route</strong>
+                <small>Create route</small>
             </a>
         </div>
 
         <div class="col-md-3">
-            <button class="btn btn-white w-100 py-3 shadow-sm border quick-action
-                   d-flex flex-column align-items-center justify-content-center gap-1">
-                <i class="bi bi-clock-history text-primary fs-4"></i>
-                <strong class="small">Schedule Trip</strong>
-                <small class="text-muted">Manage schedules</small>
-            </button>
+            <div class="btn btn-light border w-100 quick-action
+                        d-flex flex-column justify-content-center align-items-center gap-1">
+                <i class="bi bi-clock-history text-primary"></i>
+                <strong>Schedule</strong>
+                <small>Trips</small>
+            </div>
         </div>
 
         <div class="col-md-3">
-            <button class="btn btn-white w-100 py-3 shadow-sm border quick-action
-                   d-flex flex-column align-items-center justify-content-center gap-1">
-                <i class="bi bi-shield-check text-primary fs-4"></i>
-                <strong class="small">Verify User</strong>
-                <small class="text-muted">User validation</small>
-            </button>
+            <div class="btn btn-light border w-100 quick-action
+                        d-flex flex-column justify-content-center align-items-center gap-1">
+                <i class="bi bi-shield-check text-primary"></i>
+                <strong>Verify</strong>
+                <small>Users</small>
+            </div>
         </div>
 
         <div class="col-md-3">
-            <button class="btn btn-white w-100 py-3 shadow-sm border quick-action
-                   d-flex flex-column align-items-center justify-content-center gap-1">
-                <i class="bi bi-search text-primary fs-4"></i>
-                <strong class="small">Manage Bookings</strong>
-                <small class="text-muted">Search & update</small>
-            </button>
+            <div class="btn btn-light border w-100 quick-action
+                        d-flex flex-column justify-content-center align-items-center gap-1">
+                <i class="bi bi-search text-primary"></i>
+                <strong>Bookings</strong>
+                <small>Manage</small>
+            </div>
         </div>
 
     </div>
 
+    <!-- Chart + Table -->
+    <div class="row g-3">
 
-    <!-- Charts & Table -->
-    <div class="row g-4">
-
-        <!-- Route Popularity -->
+        <!-- Chart -->
         <div class="col-lg-4">
             <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <h6 class="fw-bold mb-1">Route Popularity</h6>
-                    <p class="text-muted small mb-4">Top routes</p>
+                <div class="card-body py-3">
+                    <small class="fw-bold">Route Popularity</small>
 
-                    <div class="d-flex align-items-end justify-content-between chart-simple" style="height:160px">
-                        @foreach (var route in Model.RoutePopularities)
+                    <div class="d-flex align-items-end justify-content-between chart-simple mt-3"
+                         style="height:120px">
+                        @foreach (var r in Model.RoutePopularities)
                         {
-                            var height = Math.Min(route.BookingCount, 100);
-                            <span style="height:@height%"></span>
+                            var h = Math.Min(r.BookingCount, 100);
+                            <span style="height:@h%"></span>
                         }
                     </div>
 
-                    <div class="d-flex justify-content-between small text-muted mt-2">
-                        @foreach (var route in Model.RoutePopularities)
+                    <div class="d-flex justify-content-between text-muted mt-2 chart-labels">
+                        @foreach (var r in Model.RoutePopularities)
                         {
-                            <span>@route.RouteName</span>
+                            <span title="@r.RouteName">@r.RouteName</span>
                         }
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Recent Bookings -->
+        <!-- Table -->
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-0 d-flex justify-content-between">
-                    <h6 class="fw-bold mb-0">Recent Bookings</h6>
+                <div class="card-header bg-white border-0 py-2 d-flex justify-content-between">
+                    <small class="fw-bold">Recent Bookings</small>
                     <a href="/Admin/Booking" class="small text-decoration-none">View all</a>
                 </div>
 
                 <div class="table-responsive">
-                    <table class="table align-middle table-hover mb-0">
+                    <table class="table table-hover align-middle mb-0">
                         <thead class="bg-light">
                             <tr>
-                                <th class="ps-3 small text-muted">BOOKING</th>
-                                <th class="small text-muted">PASSENGER</th>
-                                <th class="small text-muted">ROUTE</th>
-                                <th class="small text-muted">STATUS</th>
-                                <th class="text-end pe-3 small text-muted">AMOUNT</th>
+                                <th>Booking</th>
+                                <th>Passenger</th>
+                                <th>Route</th>
+                                <th>Status</th>
+                                <th class="text-end">Amount</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach (var b in Model.RecentBookings)
                             {
                                 <tr>
-                                    <td class="ps-3 fw-semibold">@b.BookingCode</td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="avatar me-2">@b.PassengerAvatar</div>
-                                            @b.PassengerName
-                                        </div>
-                                    </td>
+                                    <td>@b.BookingCode</td>
+                                    <td>@b.PassengerName</td>
                                     <td>@b.Route</td>
                                     <td>
                                         <span class="badge
@@ -198,7 +252,7 @@
                                             @b.Status
                                         </span>
                                     </td>
-                                    <td class="text-end pe-3 fw-semibold">$@b.Amount</td>
+                                    <td class="text-end">$@b.Amount</td>
                                 </tr>
                             }
                         </tbody>
@@ -209,4 +263,5 @@
         </div>
 
     </div>
+
 </div>

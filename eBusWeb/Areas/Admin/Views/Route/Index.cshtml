@@ -569,11 +569,12 @@ async function saveRouteAndStops(routeId) {
         if (!stopToDelete) return;
 
         try {
-            const res = await fetch('/Admin/Route/DeleteStop', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(stopToDelete) // Gửi trực tiếp số stopId
-            });
+          const res = await fetch('/Admin/Route/DeleteStop', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: stopToDelete }) 
+});
+
 
             const data = await res.json();
 
